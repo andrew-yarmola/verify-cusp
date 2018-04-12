@@ -3,7 +3,7 @@ COMMON= ACJ.o Box.o Params.o SL2ACJ.o Complex.o roundoff.o
 CPLUSPLUS= g++
 CC=gcc
 
-.SUFFIXES: .o .cpp
+.SUFFIXES: .o .cpp .C
 
 .cpp.o:
 	$(CPLUSPLUS) $(COPTS) $(CCFLAGS) -c ${@:o=cpp}

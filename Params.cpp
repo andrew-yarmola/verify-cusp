@@ -11,12 +11,12 @@ SL2ACJ construct_G(const Params<ACJ>& params)
 
 SL2ACJ construct_T(const Params<ACJ>& params, int x, int y)
 {
-	return SL2ACJ(ACJ(XComplex(1.)), params.lattice*ACJ(double(y))+double(x), ACJ(XComplex(0.)), ACJ(XComplex(1.)));
+	return SL2ACJ(ACJ(XComplex(1.)), params.lattice * double(y) + double(x), ACJ(XComplex(0.)), ACJ(XComplex(1.)));
 }
 
 SL2ACJ construct_word(const Params<ACJ>& params, char* word)
 {
-	ACJ one(1), zero(0);
+	ACJ one(1.), zero(0.);
 	SL2ACJ w(one, zero, zero, one);
 	SL2ACJ G(construct_G(params));
 	SL2ACJ g(inverse(G));

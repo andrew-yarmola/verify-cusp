@@ -204,7 +204,7 @@ void verify_indiscrete_lattice(char* where, char* word)
     ACJ L = params.lattice;
 
     // There are now 4 equations to check corresponding to the intersection
-    // of 4 cirles :
+    // of 4 circles :
     // |translation - 0          | < |1 + lattice|
     // |translation - (1+lattice)| < |1 + lattice|
     // |translation - 1          | < |1 - lattice|
@@ -299,7 +299,7 @@ void verify(char* where, size_t depth)
             parse_word(code);
             verify_indiscrete_lattice(where, code);
             break; } 
-        case 'E': { // Line has format E(word) - 
+        case 'E': { // Line has format E(word) - a word that cannot be parabolic has parabolic power 
             parse_word(code);
             char * comma = strchr(code,',');
             char * elliptic = comma + 1;
