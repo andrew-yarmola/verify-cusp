@@ -82,40 +82,40 @@ void verify_out_of_bounds(char* where, char bounds_code)
     }
 }
 
+// Check that the matrix is NOT of the forms
+// 1 b  OR  -1  b
+// 0 1       0 -1
+// anywhere in the box
 const int not_parabolic_at_inf(const SL2ACJ&x) {
-    // Check that the matrix is NOT of the forms
-    // 1 b  OR  -1  b
-    // 0 1       0 -1
-    // anywhere in the box
     return absLB(x.c) > 0
         || ((absLB(x.a-1) > 0 ||  absLB(x.d-1) > 0) && (absLB(x.a+1) > 0 || absLB(x.d+1) > 0));
 }
 
+// Check that the matrix is NOT of the forms
+// 1 0  OR  -1  0
+// 0 1       0 -1
+// anywhere in the box
 const int not_identity(const SL2ACJ&x) {
-    // Check that the matrix is NOT of the forms
-    // 1 0  OR  -1  0
-    // 0 1       0 -1
-    // anywhere in the box
     return absLB(x.b) > 0
         || absLB(x.c) > 0
         || ((absLB(x.a-1) > 0 || absLB(x.d-1) > 0) && (absLB(x.a+1) > 0 || absLB(x.d+1) > 0));
 }
 
+// The infinity horoball has height t = 1/|loxodromic_sqrt|. An SL2C matrix
+// a b
+// c d
+// Takes an infinity horoball of height t to a horoball of height 1/(t |c|^2)
+// We want 1/(t |c|^2) > t. With t = 1/|loxodromic_sqrt|, this gives
+// |c / loxodromic_sqrt| < 1.
 const int large_horoball(const SL2ACJ&x, const Params<ACJ>&p) {
-    // The infinity horoball has height t = 1/|loxodromic_sqrt|. An SL2C matrix
-    // a b
-    // c d
-    // Takes an infinity horoball of height t to a horoball of height 1/(t |c|^2)
-    // We want 1/(t |c|^2) > t. With t = 1/|loxodromic_sqrt|, this gives
-    // |c / loxodromic_sqrt| < 1.
     return absUB( x.c / p.loxodromic_sqrt ) < 1;
 }
 
+// Conditions checked:
+//  1) word is not a parabolic fixing infinity anywhere in the box
+//  2) word(infinity_horoball) intersects infinity_horoball
 void verify_killed(char* where, char* word)
 {
-    // Conditions checked:
-    //  1) word is not a parabolic fixing infinity anywhere in the box
-    //  2) word(infinity_horoball) intersects infinity_horoball
     Box box(where);
     Params<ACJ> params = box.cover();
 	SL2ACJ w = construct_word(params, word);
@@ -131,6 +131,7 @@ void verify_variety(char* where, char* variety)
     Box box(where);
 	Params<ACJ> params = box.cover();
     SL2ACJ w = construct_word(params, variety); 
+
     check((absUB(w.c) < 1 && absUB(w.b) < 1), where);
 }
 
@@ -180,11 +181,12 @@ void verify_not_identity(char* where, char* word)
 	check(absUB(w.b) < 1, where);
     check(not_identity(w), where);
 }
+
+// Conditions checked:
+//  1) word(infinity_horoball) intersects infinity_horoball
+//  2) at the points where the word is parabolic, it is not on the lattice
 void verify_indiscrete_lattice(char* where, char* word)
 {
-    // Conditions checked:
-    //  1) word(infinity_horoball) intersects infinity_horoball
-    //  2) at the points where the word is parabolic, it is not on the lattice
     Box box(where);
     Params<ACJ> params = box.cover();
 	SL2ACJ w = construct_word(params, word);
@@ -226,7 +228,7 @@ void verify_indiscrete_lattice(char* where, char* word)
 //  1) power is power of the elliptic as words TODO
 //  2) power(infinity_horoball) intersects infinity_horoball
 //  3) elliptic is never parabolic in the box 
-void verify_parabolic_power(char* where, char* elliptic, char * power)
+void verify_parabolic_power(char* where, char* elliptic, char* power)
 {
     // TODO : check that ellipic^k == power as words. Might be easier to have a list of pairs
     Box box(where);
@@ -313,7 +315,7 @@ void verify(char* where, size_t depth)
     }
 }
 
-int main(int argc,char**argv)
+int main(int argc, char**argv)
 {
     if(argc != 2) {
         fprintf(stderr,"Usage: %s position < data\n", argv[0]);
