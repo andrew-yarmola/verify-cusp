@@ -88,7 +88,7 @@ Params<XComplex> Box::nearer() const
             //      box_center - box_size <= true_center - true_size
             // Now, in machine arthimetric, by IEEE, if 
             //      box_center > box_size then box_center (-) box_size >= 0.
-            // Lemma 7 gives,
+            // Lemma 7.0 gives,
             //      (1-EPS)(*)( box_center (-) box_size ) <= box_center - box_size <= true_center - box_size. 
             m[i] = (1-EPS)*(box_center[i] - box_size[i]);
         } else if (center_digits[i] < 0 && // center is negative
@@ -100,7 +100,7 @@ Params<XComplex> Box::nearer() const
             //      true_center + true_size <= box_center + box_size
             // Now, in machine arthimetric, by IEEE, if 
             //      -box_center > box_size then (-box_center) (-) box_size >= 0.
-            // Lemma 7 gives,
+            // Lemma 7.0 gives,
             //      (1-EPS)(*)( (-box_center) (-) box_size ) <= -box_center - box_size <= -true_center - true_size.
             // So,
             //      -((1-EPS)(*)( (-box_center) (-) box_size )) >= true_center + true_size.
@@ -127,7 +127,7 @@ Params<XComplex> Box::further() const
             // GMT paper page 419 of Annals gives with true arithmetic
             //      true_center + true_size <= box_center + box_size
             // By IEEE (+) and (-) resepct <= and >=, so box_center (+) box_size >=0 and
-            // Lemma 7 for floating point arithmetic gives and upper bound
+            // Lemma 7.0 for floating point arithmetic gives and upper bound
             //      (1+EPS)(*)(box_center (+) box_size) >= box_center + box_size >= true_center + true_size
 		    m[i] = (1+EPS)*(box_center[i] + box_size[i]);
         } else { // true sum is <= 0
@@ -136,7 +136,7 @@ Params<XComplex> Box::further() const
             // GMT paper page 419 of Annals gives with true arithmetic
             //      box_center - box_size <= true_center - true_size
             // By IEEE, (+) and (-) respects <= and >=, and negation is exact.
-            // Thus, (-box_center) (+) box_size >=0 and Lemma 7 for floating point arithmetic gives
+            // Thus, (-box_center) (+) box_size >=0 and Lemma 7.0 for floating point arithmetic gives
             //        (1+EPS)(*)( (-box_center) (+) box_size) ) >= (-box_center) + box_size
             // So,
             //      -((1+EPS)(*)( (-box_center) (+) box_size) ))<= box_center - box_size <= true_center - true_size
@@ -163,7 +163,7 @@ Params<XComplex> Box::greater() const
             //      true_center + true_size <= box_center + box_size.
             // Notice that box_center + box_size >= true_center + true_size > 0.
             // By IEEE, box_center (+) box_size >=0, as it's guanrateed to evaluate to nearest representable.
-            // Lemma 7 for floating point arithmetic gives and upper bound
+            // Lemma 7.0 for floating point arithmetic gives and upper bound
             //      (1+EPS)(*)(box_center (+) box_size) >= box_center + box_size >= true_center + true_size
 		    m[i] = (1+EPS)*(box_center[i] + box_size[i]);
         } else if (center_digits[i] < -size_digits[i] && // true sum is negative
@@ -174,7 +174,7 @@ Params<XComplex> Box::greater() const
             //      true_center + true_size <= box_center + box_size.
             // Notice that box_center + box_size < 0.
             // By IEEE, box_center (+) box_size <= 0, as it's guanrateed to evaluate to nearest representable.
-            // Lemma 7 for floating point arithmetic gives a bound
+            // Lemma 7.0 for floating point arithmetic gives a bound
             //      (1-EPS)(*)| box_center (+) box_size | < | box_center + box_size |
             // So,
             //      -((1-EPS)(*)(-(box_center (+) box_size))) >= box_center + box_size >= true_center + true_size

@@ -24,7 +24,7 @@ inline const double areaLB(const Params<XComplex>&nearer)
     // Area is |lox_sqrt|^2*|Im(lattice)|.
     XComplex lox_sqrt = nearer.loxodromic_sqrt;
     double lat_im     = nearer.lattice.im;
-    // Apply Lemma 7 of GMT.
+    // Apply Lemma 7.0 of GMT.
     double lox_re = (1-EPS)*(lox_sqrt.re*lox_sqrt.re);
     double lox_im = (1-EPS)*(lox_sqrt.im*lox_sqrt.im);
     double lox_norm = (1-EPS)*(lox_re + lox_im);
