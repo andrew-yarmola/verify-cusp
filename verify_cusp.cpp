@@ -5,14 +5,13 @@
 #include "Box.h"
 
 #define MAX_DEPTH 200
-#define MAX_CODE_LEN 200
-#define MAX_WORD_LEN 20
-#define MAX_VAR 10
+#define MAX_CODE_LEN 100
 #define MAX_AREA 5.24
 
 
-void check(int inequalities, char* where)
+void check(bool inequalities, char* where)
 {
+    //printf("%d\n", inequalities);
     if (!inequalities) {       
         fprintf(stderr, "verify: fatal error at %s\n", where);
         exit(1);
@@ -88,7 +87,7 @@ void verify_out_of_bounds(char* where, char bounds_code)
 // anywhere in the box
 const int not_parabolic_at_inf(const SL2ACJ&x) {
     return absLB(x.c) > 0
-        || ((absLB(x.a-1) > 0 ||  absLB(x.d-1) > 0) && (absLB(x.a+1) > 0 || absLB(x.d+1) > 0));
+        || ((absLB(x.a - 1.) > 0 ||  absLB(x.d - 1.) > 0) && (absLB(x.a + 1.) > 0 || absLB(x.d + 1.) > 0));
 }
 
 // Check that the matrix is NOT of the forms
@@ -98,7 +97,7 @@ const int not_parabolic_at_inf(const SL2ACJ&x) {
 const int not_identity(const SL2ACJ&x) {
     return absLB(x.b) > 0
         || absLB(x.c) > 0
-        || ((absLB(x.a-1) > 0 || absLB(x.d-1) > 0) && (absLB(x.a+1) > 0 || absLB(x.d+1) > 0));
+        || ((absLB(x.a - 1.) > 0 || absLB(x.d - 1.) > 0) && (absLB(x.a + 1.) > 0 || absLB(x.d + 1.) > 0));
 }
 
 // The infinity horoball has height t = 1/|loxodromic_sqrt|. An SL2C matrix
@@ -109,6 +108,66 @@ const int not_identity(const SL2ACJ&x) {
 // |c / loxodromic_sqrt| < 1.
 const int large_horoball(const SL2ACJ&x, const Params<ACJ>&p) {
     return absUB( x.c / p.loxodromic_sqrt ) < 1;
+}
+
+void debug_info(char* where, char* word)
+{
+    Box box(where);
+    Params<ACJ> params = box.cover();
+    Params<XComplex> nearer = box.nearer();
+	SL2ACJ w = construct_word(params, word);
+    fprintf(stderr, "Params: %s\n", where);
+    fprintf(stderr, "L: %f + I %f size %f\n", params.lattice.f.re, params.lattice.f.im, params.lattice.size);
+    fprintf(stderr, "S: %f + I %f size %f\n", params.loxodromic_sqrt.f.re, params.loxodromic_sqrt.f.im, params.loxodromic_sqrt.size);
+    fprintf(stderr, "P: %f + I %f size %f\n", params.parabolic.f.re, params.parabolic.f.im, params.parabolic.size);
+    XComplex a = w.a.f;
+    XComplex b = w.b.f;
+    XComplex c = w.c.f;
+    XComplex d = w.d.f;
+    ACJ det = w.a * w.d - w.b * w.c;
+    fprintf(stderr, "Word: %s\n", word);
+    fprintf(stderr, "At the center is has coords\n");
+    fprintf(stderr, "a: %f + I %f\n", a.re, a.im);
+    fprintf(stderr, "b: %f + I %f\n", b.re, b.im);
+    fprintf(stderr, "c: %f + I %f\n", c.re, c.im);
+    fprintf(stderr, "d: %f + I %f\n", d.re, d.im);
+    fprintf(stderr, "det : %f + I %f\n", det.f.re, det.f.im); 
+	SL2ACJ G = construct_word(params, "G");
+    a = G.a.f;
+    b = G.b.f;
+    c = G.c.f;
+    d = G.d.f;
+    det = G.a * G.d - G.b * G.c;
+    fprintf(stderr, "Word: G\n");
+    fprintf(stderr, "At the center is has coords\n");
+    fprintf(stderr, "a: %f + I %f\n", a.re, a.im);
+    fprintf(stderr, "b: %f + I %f\n", b.re, b.im);
+    fprintf(stderr, "c: %f + I %f\n", c.re, c.im);
+    fprintf(stderr, "d: %f + I %f\n", d.re, d.im);
+    fprintf(stderr, "det : %f + I %f\n", det.f.re, det.f.im); 
+
+    fprintf(stderr, "absLB(c) : %f \n absLB(a - 1) : %f\n absLB(d - 1) : %f\n absLB(a+1) : %f\n absLB(d+1) : %f\n",
+                            absLB(w.c), absLB(w.a - 1.),  absLB(w.d - 1.), absLB(w.a + 1.), absLB(w.d + 1.));
+    fprintf(stderr, "horo_ratio : %f\n", absUB( w.c / params.loxodromic_sqrt ) );
+    
+    fprintf(stderr, "det_norm LB : %f, UB : %f\n", absLB( w.a * w.d - w.b * w.c), absUB( w.a * w.d - w.b * w.c) );
+    fprintf(stderr, "G det_norm LB : %f, UB : %f\n", absLB( G.a * G.d - G.b * G.c), absUB( G.a * G.d - G.b * G.c) );
+
+    fprintf(stderr, "L : %f\n S : %f\n P : %f\n", absLB(params.lattice - ACJ(XComplex(0.5, 0.8660254037844386467637231707529361834714))),
+                                                  absLB(params.loxodromic_sqrt - ACJ(XComplex(2., 0.))),
+                                                  absLB(params.parabolic - ACJ(XComplex(0.25, 0.4330127018922193233818615853764680917357))));
+    fprintf(stderr, "Area LB : %f\n", areaLB(nearer));
+    
+    double one = 1; // Exact
+    ACJ T = (absUB(w.d - one) < 2 || absUB(w.a - one) < 2) ? w.b : -w.b;
+    ACJ L = params.lattice;
+
+    ACJ d1 = T / (L + one);
+    ACJ d2 = d1 - one; // uses fewer operations
+    ACJ d3 = (T - one) / (L - one);
+    ACJ d4 = d3 - one; // better error estimate
+
+    fprintf(stderr, "absUB(d1) = %f\n absUB(d2) = %f\n absUB(d3) = %f\n absUB(d4) = %f\n", absUB(d1), absUB(d2), absUB(d3), absUB(d4));
 }
 
 // Conditions checked:
@@ -177,8 +236,15 @@ void verify_not_identity(char* where, char* word)
     Params<ACJ> params = box.cover();
 	SL2ACJ w = construct_word(params, word);
 
+//    debug_info(where, word);
+
+//    fprintf(stderr,"try horo - not ident\n"); 
 	check(large_horoball(w, params), where);
+//    fprintf(stderr,"pass horo - not ident\n"); 
 	check(absUB(w.b) < 1, where);
+//    fprintf(stderr,"pass b bound - not ident\n"); 
+//    fprintf(stderr," absLB(b) = %f\n absLB(c) = %f\n absLB(a-1) = %f\n absLB(d-1) = %f\n absLB(a+1) = %f\n absLB(d+1) = %f\n",
+//                    absLB(w.b), absLB(w.c), absLB(w.a - 1.), absLB(w.d - 1.), absLB(w.a + 1.), absLB(w.d + 1.));
     check(not_identity(w), where);
 }
 
@@ -191,6 +257,8 @@ void verify_indiscrete_lattice(char* where, char* word)
     Params<ACJ> params = box.cover();
 	SL2ACJ w = construct_word(params, word);
     double one = 1; // Exact
+
+//    debug_info(where, word);
 
 	check(large_horoball(w, params), where);
     
@@ -304,11 +372,16 @@ void verify(char* where, size_t depth)
         case 'E': { // Line has format E(word) - a word that cannot be parabolic has parabolic power 
             parse_word(code);
             char * comma = strchr(code,',');
+            check(comma != NULL, where);
             char * elliptic = comma + 1;
-            char * power = code;
             comma[0] = '\0'; 
+            char * power = code;
             verify_parabolic_power(where, elliptic, power);
-            break; } 
+            break; }
+        case 'H' : {
+            printf("HOLE - skipping\n");
+            break;
+        } 
         default: {
             check(false, where);
         }

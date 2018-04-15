@@ -1,6 +1,7 @@
 #include "SL2ACJ.h"
 #include "Params.h"
 #include <string.h> 
+#include <stdio.h> 
 
 SL2ACJ construct_G(const Params<ACJ>& params)
 {
@@ -20,29 +21,32 @@ SL2ACJ construct_word(const Params<ACJ>& params, char* word)
 	SL2ACJ w(one, zero, zero, one);
 	SL2ACJ G(construct_G(params));
 	SL2ACJ g(inverse(G));
-	
-	size_t pos;
+
 	int x = 0;
 	int y = 0;
-	for (pos = 0; pos <= strlen(word); ++pos) {
-		int c = pos < strlen(word) ? word[pos] : -1;
-		switch(c) {
+	size_t pos;
+	for (pos = strlen(word); pos > 0; --pos) {
+		char h = word[pos-1];
+		switch(h) {
 			case 'm': --x; break;
 			case 'M': ++x; break;
 			case 'n': --y; break;
 			case 'N': ++y; break;
 			default: {
 				if (x != 0 || y != 0) {
-					w = w * construct_T(params, x, y);
-					x = y= 0;
+					w = construct_T(params, x, y) * w;
+					x = y = 0;
 				}
-				if (c == 'g')
-					w = w * g;
-				else if (c == 'G')
-					w = w * G;
+				if (h == 'g')
+					w = g * w;
+				else if (h == 'G')
+					w = G * w;
 			}
 		}
 	}
+    if (x != 0 || y != 0) {
+        w = construct_T(params, x, y) * w;
+    }
     return w;
 }
 
