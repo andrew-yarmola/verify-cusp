@@ -1,3 +1,5 @@
+#include "fenv.h"
+#include "stdio.h"
 /*59:*/
 #line 15 "glue.w"
 
@@ -22,6 +24,8 @@ ieee_handler("set","underflow",SIGFPE_ABORT);
 }
 #else 
 void initialize_roundoff(){
+    printf("underflow sate : \n%d\n", fetestexcept(FE_UNDERFLOW));
+    printf("overflow state :%d\n", fetestexcept(FE_OVERFLOW));
 }
 #endif 
 #endif 
@@ -38,7 +42,10 @@ return fp_underflow()==0;
 }
 #else 
 int roundoff_ok(){
-return 0;
+    printf("underflow sate : \n%d\n", fetestexcept(FE_UNDERFLOW));
+    printf("overflow state :%d\n", fetestexcept(FE_OVERFLOW));
+    if (fetestexcept(FE_UNDERFLOW) != 0 || fetestexcept(FE_OVERFLOW) != 0) return 0;
+    return 1;
 }
 #endif 
 #endif 
