@@ -8,13 +8,12 @@
 #define MAX_CODE_LEN 100
 #define MAX_AREA 5.24
 
-
 void check(bool inequalities, char* where)
 {
     //printf("%d\n", inequalities);
     if (!inequalities) {       
         fprintf(stderr, "verify: fatal error at %s\n", where);
-        exit(1);
+//        exit(1);
     }
 }
 
@@ -23,6 +22,10 @@ inline const double areaLB(const Params<XComplex>&nearer)
     // Area is |lox_sqrt|^2*|Im(lattice)|.
     XComplex lox_sqrt = nearer.loxodromic_sqrt;
     double lat_im     = nearer.lattice.im;
+    if (lat_im  < 0) { // this should never happen
+      printf("%s\n", "ERROR : Have negative Im(L)!!!");
+      lat_im = -lat_im;
+    }
     // Apply Lemma 7.0 of GMT.
     double lox_re = (1-EPS)*(lox_sqrt.re*lox_sqrt.re);
     double lox_im = (1-EPS)*(lox_sqrt.im*lox_sqrt.im);
@@ -45,9 +48,9 @@ inline const double areaLB(const Params<XComplex>&nearer)
 void verify_out_of_bounds(char* where, char bounds_code)
 {
     Box box(where);
-	Params<XComplex> nearer = box.nearer();
-	Params<XComplex> further = box.further();
-	Params<XComplex> greater = box.greater();
+    Params<XComplex> nearer = box.nearer();
+    Params<XComplex> further = box.further();
+    Params<XComplex> greater = box.greater();
     switch(bounds_code) {
         case '0': {
             check(absUB(further.loxodromic_sqrt) < 1, where);
@@ -95,9 +98,7 @@ const int not_parabolic_at_inf(const SL2ACJ&x) {
 // 0 1       0 -1
 // anywhere in the box
 const int not_identity(const SL2ACJ&x) {
-    return absLB(x.b) > 0
-        || absLB(x.c) > 0
-        || ((absLB(x.a - 1.) > 0 || absLB(x.d - 1.) > 0) && (absLB(x.a + 1.) > 0 || absLB(x.d + 1.) > 0));
+    return absLB(x.b) > 0 || not_parabolic_at_inf(x);
 }
 
 // The infinity horoball has height t = 1/|loxodromic_sqrt|. An SL2C matrix
@@ -115,7 +116,7 @@ void debug_info(char* where, char* word)
     Box box(where);
     Params<ACJ> params = box.cover();
     Params<XComplex> nearer = box.nearer();
-	SL2ACJ w = construct_word(params, word);
+    SL2ACJ w = construct_word(params, word);
     fprintf(stderr, "Params: %s\n", where);
     fprintf(stderr, "L: %f + I %f size %f\n", params.lattice.f.re, params.lattice.f.im, params.lattice.size);
     fprintf(stderr, "S: %f + I %f size %f\n", params.loxodromic_sqrt.f.re, params.loxodromic_sqrt.f.im, params.loxodromic_sqrt.size);
@@ -132,7 +133,7 @@ void debug_info(char* where, char* word)
     fprintf(stderr, "c: %f + I %f\n", c.re, c.im);
     fprintf(stderr, "d: %f + I %f\n", d.re, d.im);
     fprintf(stderr, "det : %f + I %f\n", det.f.re, det.f.im); 
-	SL2ACJ G = construct_word(params, "G");
+    SL2ACJ G = construct_word(params, "G");
     a = G.a.f;
     b = G.b.f;
     c = G.c.f;
@@ -177,10 +178,10 @@ void verify_killed(char* where, char* word)
 {
     Box box(where);
     Params<ACJ> params = box.cover();
-	SL2ACJ w = construct_word(params, word);
+    SL2ACJ w = construct_word(params, word);
 
     check(not_parabolic_at_inf(w), where);
-	check(large_horoball(w, params), where);
+    check(large_horoball(w, params), where);
 }
 
 // Conditions checked:
@@ -188,7 +189,7 @@ void verify_killed(char* where, char* word)
 void verify_variety(char* where, char* variety)
 {
     Box box(where);
-	Params<ACJ> params = box.cover();
+    Params<ACJ> params = box.cover();
     SL2ACJ w = construct_word(params, variety); 
 
     check((absUB(w.c) < 1 && absUB(w.b) < 1), where);
@@ -196,52 +197,71 @@ void verify_variety(char* where, char* variety)
 
 // Conditions checked:
 //  1) word(infinity_horoball) intersects infinity_horoball
-//  2) word cannot be a parabolic fixing infinity
-void verify_parabolic_impossible(char* where, char* word)
+//  2) check word is one that cannot be a parabolic fixing infinity
+void verify_parabolic_always_impossible(char* where, char* word)
 {
     Box box(where);
     Params<ACJ> params = box.cover();
-	SL2ACJ w = construct_word(params, word);
+    SL2ACJ w = construct_word(params, word);
 
-	check(large_horoball(w, params), where);
+    check(large_horoball(w, params), where);
 
     // TODO Finish -- load file of impossible parabolics
-    fprintf(stderr, "verify: no implementation of checking impossible parabolic contradiction at %s\n", where);
+    // fprintf(stderr, "verify: no implementation of checking impossible parabolic contradiction at %s\n", where);
+}
+
+// Conditions checked:
+//  1) word(infinity_horoball) intersects infinity_horoball
+//  2) checks that a parabolic translate of the word is a power of a subword that cannot be parabolic
+void verify_parabolic_impossible(char* where, char* word, char* subword)
+{
+    Box box(where);
+    Params<ACJ> params = box.cover();
+    SL2ACJ w = construct_word(params, word);
+    SL2ACJ v = construct_word(params, subword);
+
+    check(large_horoball(w, params), where);
+    check(not_parabolic_at_inf(v), where);
+    // TODO Finish -- load file of impossible parabolics
+    // fprintf(stderr, "verify: no implementation of checking impossible identity contradiction at %s\n", where);
 }
 
 // Conditions checked:
 //  1) word(infinity_horoball) intersects infinity_horoball
 //  2) if word is a parabolic fixinig infinity, it must be the idenity
-//  3) word cannot be a identity
-void verify_identity_impossible(char* where, char* word)
+//  3) word on the list of those that cannot be the idenity
+void verify_identity_always_impossible(char* where, char* word)
 {
     Box box(where);
     Params<ACJ> params = box.cover();
-	SL2ACJ w = construct_word(params, word);
+    SL2ACJ w = construct_word(params, word);
 
-	check(large_horoball(w, params), where);
-	check(absUB(w.b) < 1, where);
-
+//    debug_info(where, word);
+    check(large_horoball(w, params), where);
+//    fprintf(stderr,"try horo - not ident\n"); 
+//    fprintf(stderr,"pass horo - not ident\n");
+//    fprintf(stderr, "absUB(w.b) = %f\n", absUB(w.b));
+    check(absUB(w.b) < 1, where);
     // TODO Finish -- load file of impossible parabolics
-    fprintf(stderr, "verify: no implementation of checking impossible identity contradiction at %s\n", where);
+    // fprintf(stderr, "verify: no implementation of checking impossible identity contradiction at %s\n", where);
 }
 
 // Conditions checked:
 //  1) word(infinity_horoball) intersects infinity_horoball
 //  2) if word is a parabolic fixinig infinity, it must be the idenity
 //  3) word is not the idenity
-void verify_not_identity(char* where, char* word)
+void verify_indiscrete_lattice_simple(char* where, char* word)
 {
     Box box(where);
     Params<ACJ> params = box.cover();
-	SL2ACJ w = construct_word(params, word);
+    SL2ACJ w = construct_word(params, word);
 
 //    debug_info(where, word);
-
+    check(large_horoball(w, params), where);
 //    fprintf(stderr,"try horo - not ident\n"); 
-	check(large_horoball(w, params), where);
-//    fprintf(stderr,"pass horo - not ident\n"); 
-	check(absUB(w.b) < 1, where);
+//    fprintf(stderr,"pass horo - not ident\n");
+//    fprintf(stderr, "absUB(w.b) = %f\n", absUB(w.b));
+    check(absUB(w.b) < 1, where);
 //    fprintf(stderr,"pass b bound - not ident\n"); 
 //    fprintf(stderr," absLB(b) = %f\n absLB(c) = %f\n absLB(a-1) = %f\n absLB(d-1) = %f\n absLB(a+1) = %f\n absLB(d+1) = %f\n",
 //                    absLB(w.b), absLB(w.c), absLB(w.a - 1.), absLB(w.d - 1.), absLB(w.a + 1.), absLB(w.d + 1.));
@@ -255,12 +275,12 @@ void verify_indiscrete_lattice(char* where, char* word)
 {
     Box box(where);
     Params<ACJ> params = box.cover();
-	SL2ACJ w = construct_word(params, word);
+    SL2ACJ w = construct_word(params, word);
     double one = 1; // Exact
 
 //    debug_info(where, word);
 
-	check(large_horoball(w, params), where);
+    check(large_horoball(w, params), where);
     
     // For all parabolic points in the box, we want verify
     // that none of them are lattice points. At such a point, the parabolic
@@ -289,23 +309,12 @@ void verify_indiscrete_lattice(char* where, char* word)
     ACJ d3 = (T - one) / (L - one);
     ACJ d4 = d3 - one; // better error estimate
 
+    fprintf(stderr, "%f, %f, %f, %f\n", absLB(L + one) - absUB(T),
+                                        absLB(L + one) - absUB(T - L - one),
+                                        absLB(L - one) - absUB(T - one),
+                                        absLB(L - one) - absUB(T - L));
+
     check(absUB(d1) < 1 && absUB(d2) < 1 && absUB(d3) < 1 && absUB(d4) < 1, where);
-}
-
-// Conditions checked:
-//  1) power is power of the elliptic as words TODO
-//  2) power(infinity_horoball) intersects infinity_horoball
-//  3) elliptic is never parabolic in the box 
-void verify_parabolic_power(char* where, char* elliptic, char* power)
-{
-    // TODO : check that ellipic^k == power as words. Might be easier to have a list of pairs
-    Box box(where);
-    Params<ACJ> params = box.cover();
-	SL2ACJ p = construct_word(params, power);
-	SL2ACJ e = construct_word(params, elliptic);
-
-	check(large_horoball(p, params), where);
-    check(not_parabolic_at_inf(e), where);
 }
 
 void parse_word(char* code)
@@ -355,28 +364,28 @@ void verify(char* where, size_t depth)
             break; }
         case 'P': { // Line has format P(word) - word cannot be parabolic
             parse_word(code);
-            verify_parabolic_impossible(where, code);
+            verify_parabolic_always_impossible(where, code);
             break; } 
-        case 'I': { // Line has format I(word) - absUB(w.b) < 1 but word can't be identity 
+        case 'I': { // Line has format I(word) - impossible identity 
             parse_word(code);
-            verify_identity_impossible(where, code);
+            verify_identity_always_impossible(where, code);
             break; }
-        case 'Q': { // Line has format I(word) - absUB(w.b) < 1 and word isn't the idenity 
+        case 'Q': { // Line has format Q(word) - failed quasi-relator 
             parse_word(code);
-            verify_not_identity(where, code);
+            verify_indiscrete_lattice_simple(where, code);
             break; }
         case 'L': { // Line has format L(word) - all parabolics indiscrete
             parse_word(code);
             verify_indiscrete_lattice(where, code);
             break; } 
-        case 'E': { // Line has format E(word) - a word that cannot be parabolic has parabolic power 
+        case 'E': { // Line has format E(word, subword) - a word that cannot be parabolic has parabolic power 
             parse_word(code);
             char * comma = strchr(code,',');
             check(comma != NULL, where);
-            char * elliptic = comma + 1;
+            char * subword = comma + 1;
             comma[0] = '\0'; 
-            char * power = code;
-            verify_parabolic_power(where, elliptic, power);
+            char * word = code;
+            verify_parabolic_impossible(where, word, subword);
             break; }
         case 'H' : {
             printf("HOLE - skipping\n");
