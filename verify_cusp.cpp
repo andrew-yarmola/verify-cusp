@@ -8,13 +8,15 @@
 #define MAX_CODE_LEN 100
 #define MAX_AREA 5.24
 
-void check(bool inequalities, char* where)
+bool check(bool inequalities, char* where)
 {
     //printf("%d\n", inequalities);
     if (!inequalities) {       
         fprintf(stderr, "verify: fatal error at %s\n", where);
+        return false;
 //        exit(1);
     }
+    return true;
 }
 
 inline const double areaLB(const Params<XComplex>&nearer)
@@ -192,7 +194,7 @@ void verify_variety(char* where, char* variety)
     Params<ACJ> params = box.cover();
     SL2ACJ w = construct_word(params, variety); 
 
-    check((absUB(w.c) < 1 && absUB(w.b) < 1), where);
+    check((absUB(w.c) < 1) && (absUB(w.b) < 1 || absLB(w.c) > 0), where);
 }
 
 // Conditions checked:
@@ -256,16 +258,30 @@ void verify_indiscrete_lattice_simple(char* where, char* word)
     Params<ACJ> params = box.cover();
     SL2ACJ w = construct_word(params, word);
 
-//    debug_info(where, word);
     check(large_horoball(w, params), where);
-//    fprintf(stderr,"try horo - not ident\n"); 
-//    fprintf(stderr,"pass horo - not ident\n");
-//    fprintf(stderr, "absUB(w.b) = %f\n", absUB(w.b));
     check(absUB(w.b) < 1, where);
-//    fprintf(stderr,"pass b bound - not ident\n"); 
-//    fprintf(stderr," absLB(b) = %f\n absLB(c) = %f\n absLB(a-1) = %f\n absLB(d-1) = %f\n absLB(a+1) = %f\n absLB(d+1) = %f\n",
-//                    absLB(w.b), absLB(w.c), absLB(w.a - 1.), absLB(w.d - 1.), absLB(w.a + 1.), absLB(w.d + 1.));
     check(not_identity(w), where);
+//
+//    bool h = check(large_horoball(w, params), where);
+//    bool b = check(absUB(w.b) < 1, where);
+//    bool id = check(not_identity(w), where);
+//
+//    if (!h || !b || ! id) {
+//        fprintf(stderr,"Q FAILURE+++++++++++++++\n");
+//        debug_info(where, word);
+//    }
+//    if (!h) {
+//        fprintf(stderr,"fail horo - indiscrete_lattice_simple\n");
+//    }
+//    if (!b) {
+//        fprintf(stderr,"fail b bound - indiscrete_lattice_simple\n");
+//        fprintf(stderr, "absUB(w.b) = %f\n", absUB(w.b));
+//    }
+//    if (!id) {
+//        fprintf(stderr,"fail not ident - indiscrete_lattice_simple\n");
+//        fprintf(stderr," absLB(b) = %f\n absLB(c) = %f\n absLB(a-1) = %f\n absLB(d-1) = %f\n absLB(a+1) = %f\n absLB(d+1) = %f\n",
+//                         absLB(w.b), absLB(w.c), absLB(w.a - 1.), absLB(w.d - 1.), absLB(w.a + 1.), absLB(w.d + 1.));
+//    } 
 }
 
 // Conditions checked:
@@ -309,10 +325,10 @@ void verify_indiscrete_lattice(char* where, char* word)
     ACJ d3 = (T - one) / (L - one);
     ACJ d4 = d3 - one; // better error estimate
 
-    fprintf(stderr, "%f, %f, %f, %f\n", absLB(L + one) - absUB(T),
-                                        absLB(L + one) - absUB(T - L - one),
-                                        absLB(L - one) - absUB(T - one),
-                                        absLB(L - one) - absUB(T - L));
+//    fprintf(stderr, "%f, %f, %f, %f\n", absLB(L + one) - absUB(T),
+//                                        absLB(L + one) - absUB(T - L - one),
+//                                        absLB(L - one) - absUB(T - one),
+//                                        absLB(L - one) - absUB(T - L));
 
     check(absUB(d1) < 1 && absUB(d2) < 1 && absUB(d3) < 1 && absUB(d4) < 1, where);
 }
@@ -328,22 +344,22 @@ void parse_word(char* code)
     code[len] = '\0'; 
 }
 
-void verify(char* where, size_t depth)
+void verify(char* where, size_t depth, size_t* count_ptr)
 {
+    *count_ptr += 1;
     check(depth < MAX_DEPTH, where);
-
     // TODO: Make a conditional list file and update the tree with conditions
     char code[MAX_CODE_LEN];
     fgets(code,MAX_CODE_LEN, stdin);
-//    printf("%s CODE %s\n", where, code);
+    //printf("%s CODE %s\n", where, code);
     switch(code[0]) {
         case 'X': { 
             where[depth] = '0';
             where[depth+1] = '\0';
-            verify(where, depth+1);
+            verify(where, depth+1, count_ptr);
             where[depth] = '1';
             where[depth+1] = '\0';
-            verify(where, depth+1);
+            verify(where, depth+1, count_ptr);
             break; }
         case '0': 
         case '1': 
@@ -415,13 +431,15 @@ int main(int argc, char**argv)
     }
     where[depth] = '\0';
 
-    printf("verified %s - { ",where);
+    printf("verified %s - {\n", where);
     initialize_roundoff();
-    verify(where, depth);
+    size_t count = 0;
+    verify(where, depth, &count);
     if(!roundoff_ok()){
         printf(". underflow may have occurred\n");
         exit(1);
     }
+    printf("Verified %lu nodes\n", count);
     printf("}.\n");
     exit(0);
 }

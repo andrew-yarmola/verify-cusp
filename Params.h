@@ -10,7 +10,7 @@ template<class N> struct Params {
 };
 
 SL2ACJ construct_G(const Params<ACJ>& params);
-SL2ACJ construct_T(const Params<ACJ>& params, int x, int y);
-SL2ACJ construct_word(const Params<ACJ>& params, char* word);
+ACJ construct_T(const Params<ACJ>& params, int M, int N);
+SL2ACJ construct_word(const Params<ACJ>& params, const char* word);
 
 #endif // __Params_h

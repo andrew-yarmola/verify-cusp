@@ -10,32 +10,34 @@ SL2ACJ construct_G(const Params<ACJ>& params)
 	return SL2ACJ(I*params.parabolic*sl, I/sl, I*sl, ACJ(0.));
 }
 
-SL2ACJ construct_T(const Params<ACJ>& params, int x, int y)
+ACJ construct_T(const Params<ACJ>& params, int M, int N)
 {
-	return SL2ACJ(ACJ(XComplex(1.)), params.lattice * double(y) + double(x), ACJ(XComplex(0.)), ACJ(XComplex(1.)));
+	return params.lattice * double(N) + double(M);
 }
 
-SL2ACJ construct_word(const Params<ACJ>& params, char* word)
+SL2ACJ construct_word(const Params<ACJ>& params, const char* word)
 {
 	ACJ one(1.), zero(0.);
 	SL2ACJ w(one, zero, zero, one);
 	SL2ACJ G(construct_G(params));
 	SL2ACJ g(inverse(G));
 
-	int x = 0;
-	int y = 0;
+	int M = 0;
+	int N = 0;
+    ACJ T;
 	size_t pos;
 	for (pos = strlen(word); pos > 0; --pos) {
 		char h = word[pos-1];
 		switch(h) {
-			case 'm': --x; break;
-			case 'M': ++x; break;
-			case 'n': --y; break;
-			case 'N': ++y; break;
+			case 'm': --M; break;
+			case 'M': ++M; break;
+			case 'n': --N; break;
+			case 'N': ++N; break;
 			default: {
-				if (x != 0 || y != 0) {
-					w = construct_T(params, x, y) * w;
-					x = y = 0;
+				if (M != 0 || N != 0) {
+                    T = construct_T(params, M, N);
+                    w = SL2ACJ(w.a + T * w.c, w.b + T * w.d, w.c, w.d);
+					M = N = 0;
 				}
 				if (h == 'g')
 					w = g * w;
@@ -44,8 +46,9 @@ SL2ACJ construct_word(const Params<ACJ>& params, char* word)
 			}
 		}
 	}
-    if (x != 0 || y != 0) {
-        w = construct_T(params, x, y) * w;
+    if (M != 0 || N != 0) {
+        T = construct_T(params, M, N);
+        w = SL2ACJ(w.a + T * w.c, w.b + T * w.d, w.c, w.d);
     }
     return w;
 }
