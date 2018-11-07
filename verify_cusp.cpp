@@ -346,7 +346,6 @@ void parse_word(char* code)
 
 void verify(char* where, size_t depth, size_t* count_ptr)
 {
-    *count_ptr += 1;
     check(depth < MAX_DEPTH, where);
     // TODO: Make a conditional list file and update the tree with conditions
     char code[MAX_CODE_LEN];
@@ -361,6 +360,7 @@ void verify(char* where, size_t depth, size_t* count_ptr)
             where[depth+1] = '\0';
             verify(where, depth+1, count_ptr);
             break; }
+        *count_ptr += 1;
         case '0': 
         case '1': 
         case '2': 
