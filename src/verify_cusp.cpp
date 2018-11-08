@@ -4,29 +4,26 @@
 #include "roundoff.h"
 #include "Box.h"
 
-#define MAX_DEPTH 200
-#define MAX_CODE_LEN 100
+#define MAX_DEPTH 256
+#define MAX_CODE_LEN 512
 #define MAX_AREA 5.24
 
-bool check(bool inequalities, char* where)
+void check(bool inequalities, char* where)
 {
     if (!inequalities) {       
-        fprintf(stderr, "verify: fatal error at %s\n", where);
-        return false;
-//        exit(1);
+        fprintf(stderr, "Fatal: verify error at %s\n", where);
+        exit(3);
     }
-    return true;
 }
 
-inline const double areaLB(const Params<XComplex>&nearer)
+inline const double areaLB(const Params<XComplex>&nearer, char* where)
 {
     // Area is |lox_sqrt|^2*|Im(lattice)|.
     XComplex lox_sqrt = nearer.loxodromic_sqrt;
     double lat_im     = nearer.lattice.im;
     if (lat_im  < 0) { // this should never happen
-      printf("%s\n", "ERROR : Have negative Im(L)!!!");
-//    exit(1);
-      lat_im = -lat_im;
+        fprintf(stderr, "Fatal: lattice imaginary part is negative at %s\n", where);
+        exit(5);
     }
     // Apply Lemma 7.0 of GMT.
     double lox_re = (1-EPS)*(lox_sqrt.re*lox_sqrt.re);
@@ -67,7 +64,7 @@ void verify_out_of_bounds(char* where, char bounds_code)
             check(fabs(nearer.lattice.re) > 0.5, where);
             break; } 
         case '3': {
-            check(absUB(further.lattice) < 1.0, where);
+            check(absUB(further.lattice) < 1, where);
             break; } 
         case '4': {
             // Note: we can exclude the box if and only if the parabolic imag part is
@@ -79,7 +76,7 @@ void verify_out_of_bounds(char* where, char bounds_code)
             check(nearer.parabolic.re > 0.5, where);
             break; } 
         case '6': {
-            double area = areaLB(nearer);
+            double area = areaLB(nearer, where);
             check(area > MAX_AREA, where);
             break;
         }
@@ -92,11 +89,11 @@ void verify_out_of_bounds(char* where, char bounds_code)
 // anywhere in the box
 const int not_parabolic_at_inf(const SL2ACJ&x) {
     return absLB(x.c) > 0
-        || ((absLB(x.a - 1.0) > 0 ||  absLB(x.d - 1.0) > 0) && (absLB(x.a + 1.0) > 0 || absLB(x.d + 1.0) > 0));
+        || ((absLB(x.a - 1) > 0 ||  absLB(x.d - 1) > 0) && (absLB(x.a + 1) > 0 || absLB(x.d + 1) > 0));
 }
 
 // Check that the matrix is NOT of the forms
-// 1 0  OR  -1  0
+// 1  OR  -1  0
 // 0 1       0 -1
 // anywhere in the box
 const int not_identity(const SL2ACJ&x) {
@@ -110,7 +107,7 @@ const int not_identity(const SL2ACJ&x) {
 // We want 1/(t |c|^2) > t. With t = 1/|loxodromic_sqrt|, this gives
 // |c / loxodromic_sqrt| < 1.
 const int large_horoball(const SL2ACJ&x, const Params<ACJ>&p) {
-    return absUB( x.c / p.loxodromic_sqrt ) < 1.0;
+    return absUB( x.c / p.loxodromic_sqrt ) < 1;
 }
 
 // Conditions checked:
@@ -134,7 +131,7 @@ void verify_variety(char* where, char* variety)
     Params<ACJ> params = box.cover();
     SL2ACJ w = construct_word(params, variety); 
 
-    check((absUB(w.c) < 1.0) && (absUB(w.b) < 1.0 || absLB(w.c) > 0), where);
+    check((absUB(w.c) < 1) && (absUB(w.b) < 1 || absLB(w.c) > 0), where);
 }
 
 // Conditions checked:
@@ -239,19 +236,19 @@ void parse_word(char* code)
 void verify(char* where, size_t depth, size_t* count_ptr)
 {
     check(depth < MAX_DEPTH, where);
+    *count_ptr += 1;
     char code[MAX_CODE_LEN];
     fgets(code, MAX_CODE_LEN, stdin);
-    //printf("%s CODE %s\n", where, code);
     switch(code[0]) {
         case 'X': { 
+            *count_ptr -= 1; // don't count branch nodes
             where[depth] = '0';
-            where[depth+1] = '\0';
-            verify(where, depth+1, count_ptr);
+            where[depth + 1] = '\0';
+            verify(where, depth + 1, count_ptr);
             where[depth] = '1';
-            where[depth+1] = '\0';
-            verify(where, depth+1, count_ptr);
+            where[depth + 1] = '\0';
+            verify(where, depth + 1, count_ptr);
             break; }
-        *count_ptr += 1;
         case '0': 
         case '1': 
         case '2': 
@@ -291,8 +288,8 @@ void verify(char* where, size_t depth, size_t* count_ptr)
             verify_parabolic_impossible(where, word, subword);
             break; }
         case 'H' : {
-            printf("HOLE - skipping\n");
-            break;
+            fprintf(stderr, "Fatal: tree has hole at %s\n", where);
+            exit(4);
         } 
         default: {
             check(false, where);
