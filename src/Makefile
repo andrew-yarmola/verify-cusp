@@ -9,7 +9,13 @@ CC=gcc
 	$(CPLUSPLUS) $(COPTS) $(CCFLAGS) -c ${@:o=cpp}
 
 verify_cusp: verify_cusp.o $(COMMON)
-	$(CPLUSPLUS) $(COPTS) verify_cusp.o $(COMMON) $(LIBS) -o verify_cusp
+	$(CPLUSPLUS) $(COPTS) verify_cusp.o $(COMMON) $(LIBS) -o ../bin/verify_cusp
+
+simple_tree_cat: simple_tree_cat.o
+	$(CPLUSPLUS) $(COPTS) simple_tree_cat.o -o ../bin/simple_tree_cat
+
+rootcat: rootcat.o
+	$(CC) $(COPTS) rootcat.o -o ../bin/rootcat
 
 depend:
 	makedepend -I/usr/local/lib/g++-include -f Makefile.depend *.cpp

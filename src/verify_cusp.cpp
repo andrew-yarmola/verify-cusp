@@ -10,7 +10,6 @@
 
 bool check(bool inequalities, char* where)
 {
-    //printf("%d\n", inequalities);
     if (!inequalities) {       
         fprintf(stderr, "verify: fatal error at %s\n", where);
         return false;
@@ -26,6 +25,7 @@ inline const double areaLB(const Params<XComplex>&nearer)
     double lat_im     = nearer.lattice.im;
     if (lat_im  < 0) { // this should never happen
       printf("%s\n", "ERROR : Have negative Im(L)!!!");
+//    exit(1);
       lat_im = -lat_im;
     }
     // Apply Lemma 7.0 of GMT.
@@ -67,7 +67,7 @@ void verify_out_of_bounds(char* where, char bounds_code)
             check(fabs(nearer.lattice.re) > 0.5, where);
             break; } 
         case '3': {
-            check(absUB(further.lattice) < 1, where);
+            check(absUB(further.lattice) < 1.0, where);
             break; } 
         case '4': {
             // Note: we can exclude the box if and only if the parabolic imag part is
@@ -92,7 +92,7 @@ void verify_out_of_bounds(char* where, char bounds_code)
 // anywhere in the box
 const int not_parabolic_at_inf(const SL2ACJ&x) {
     return absLB(x.c) > 0
-        || ((absLB(x.a - 1.) > 0 ||  absLB(x.d - 1.) > 0) && (absLB(x.a + 1.) > 0 || absLB(x.d + 1.) > 0));
+        || ((absLB(x.a - 1.0) > 0 ||  absLB(x.d - 1.0) > 0) && (absLB(x.a + 1.0) > 0 || absLB(x.d + 1.0) > 0));
 }
 
 // Check that the matrix is NOT of the forms
@@ -110,67 +110,7 @@ const int not_identity(const SL2ACJ&x) {
 // We want 1/(t |c|^2) > t. With t = 1/|loxodromic_sqrt|, this gives
 // |c / loxodromic_sqrt| < 1.
 const int large_horoball(const SL2ACJ&x, const Params<ACJ>&p) {
-    return absUB( x.c / p.loxodromic_sqrt ) < 1;
-}
-
-void debug_info(char* where, char* word)
-{
-    Box box(where);
-    Params<ACJ> params = box.cover();
-    Params<XComplex> nearer = box.nearer();
-    SL2ACJ w = construct_word(params, word);
-    fprintf(stderr, "Params: %s\n", where);
-    fprintf(stderr, "L: %f + I %f size %f\n", params.lattice.f.re, params.lattice.f.im, params.lattice.size);
-    fprintf(stderr, "S: %f + I %f size %f\n", params.loxodromic_sqrt.f.re, params.loxodromic_sqrt.f.im, params.loxodromic_sqrt.size);
-    fprintf(stderr, "P: %f + I %f size %f\n", params.parabolic.f.re, params.parabolic.f.im, params.parabolic.size);
-    XComplex a = w.a.f;
-    XComplex b = w.b.f;
-    XComplex c = w.c.f;
-    XComplex d = w.d.f;
-    ACJ det = w.a * w.d - w.b * w.c;
-    fprintf(stderr, "Word: %s\n", word);
-    fprintf(stderr, "At the center is has coords\n");
-    fprintf(stderr, "a: %f + I %f\n", a.re, a.im);
-    fprintf(stderr, "b: %f + I %f\n", b.re, b.im);
-    fprintf(stderr, "c: %f + I %f\n", c.re, c.im);
-    fprintf(stderr, "d: %f + I %f\n", d.re, d.im);
-    fprintf(stderr, "det : %f + I %f\n", det.f.re, det.f.im); 
-    SL2ACJ G = construct_word(params, "G");
-    a = G.a.f;
-    b = G.b.f;
-    c = G.c.f;
-    d = G.d.f;
-    det = G.a * G.d - G.b * G.c;
-    fprintf(stderr, "Word: G\n");
-    fprintf(stderr, "At the center is has coords\n");
-    fprintf(stderr, "a: %f + I %f\n", a.re, a.im);
-    fprintf(stderr, "b: %f + I %f\n", b.re, b.im);
-    fprintf(stderr, "c: %f + I %f\n", c.re, c.im);
-    fprintf(stderr, "d: %f + I %f\n", d.re, d.im);
-    fprintf(stderr, "det : %f + I %f\n", det.f.re, det.f.im); 
-
-    fprintf(stderr, "absLB(c) : %f \n absLB(a - 1) : %f\n absLB(d - 1) : %f\n absLB(a+1) : %f\n absLB(d+1) : %f\n",
-                            absLB(w.c), absLB(w.a - 1.),  absLB(w.d - 1.), absLB(w.a + 1.), absLB(w.d + 1.));
-    fprintf(stderr, "horo_ratio : %f\n", absUB( w.c / params.loxodromic_sqrt ) );
-    
-    fprintf(stderr, "det_norm LB : %f, UB : %f\n", absLB( w.a * w.d - w.b * w.c), absUB( w.a * w.d - w.b * w.c) );
-    fprintf(stderr, "G det_norm LB : %f, UB : %f\n", absLB( G.a * G.d - G.b * G.c), absUB( G.a * G.d - G.b * G.c) );
-
-    fprintf(stderr, "L : %f\n S : %f\n P : %f\n", absLB(params.lattice - ACJ(XComplex(0.5, 0.8660254037844386467637231707529361834714))),
-                                                  absLB(params.loxodromic_sqrt - ACJ(XComplex(2., 0.))),
-                                                  absLB(params.parabolic - ACJ(XComplex(0.25, 0.4330127018922193233818615853764680917357))));
-    fprintf(stderr, "Area LB : %f\n", areaLB(nearer));
-    
-    double one = 1; // Exact
-    ACJ T = (absUB(w.d - one) < 2 || absUB(w.a - one) < 2) ? w.b : -w.b;
-    ACJ L = params.lattice;
-
-    ACJ d1 = T / (L + one);
-    ACJ d2 = d1 - one; // uses fewer operations
-    ACJ d3 = (T - one) / (L - one);
-    ACJ d4 = d3 - one; // better error estimate
-
-    fprintf(stderr, "absUB(d1) = %f\n absUB(d2) = %f\n absUB(d3) = %f\n absUB(d4) = %f\n", absUB(d1), absUB(d2), absUB(d3), absUB(d4));
+    return absUB( x.c / p.loxodromic_sqrt ) < 1.0;
 }
 
 // Conditions checked:
@@ -182,8 +122,8 @@ void verify_killed(char* where, char* word)
     Params<ACJ> params = box.cover();
     SL2ACJ w = construct_word(params, word);
 
-    check(not_parabolic_at_inf(w), where);
     check(large_horoball(w, params), where);
+    check(not_parabolic_at_inf(w), where);
 }
 
 // Conditions checked:
@@ -194,7 +134,7 @@ void verify_variety(char* where, char* variety)
     Params<ACJ> params = box.cover();
     SL2ACJ w = construct_word(params, variety); 
 
-    check((absUB(w.c) < 1) && (absUB(w.b) < 1 || absLB(w.c) > 0), where);
+    check((absUB(w.c) < 1.0) && (absUB(w.b) < 1.0 || absLB(w.c) > 0), where);
 }
 
 // Conditions checked:
@@ -231,26 +171,6 @@ void verify_parabolic_impossible(char* where, char* word, char* subword)
 // Conditions checked:
 //  1) word(infinity_horoball) intersects infinity_horoball
 //  2) if word is a parabolic fixinig infinity, it must be the idenity
-//  3) word on the list of those that cannot be the idenity
-void verify_identity_always_impossible(char* where, char* word)
-{
-    Box box(where);
-    Params<ACJ> params = box.cover();
-    SL2ACJ w = construct_word(params, word);
-
-//    debug_info(where, word);
-    check(large_horoball(w, params), where);
-//    fprintf(stderr,"try horo - not ident\n"); 
-//    fprintf(stderr,"pass horo - not ident\n");
-//    fprintf(stderr, "absUB(w.b) = %f\n", absUB(w.b));
-    check(absUB(w.b) < 1, where);
-    // TODO Finish -- load file of impossible parabolics
-    // fprintf(stderr, "verify: no implementation of checking impossible identity contradiction at %s\n", where);
-}
-
-// Conditions checked:
-//  1) word(infinity_horoball) intersects infinity_horoball
-//  2) if word is a parabolic fixinig infinity, it must be the idenity
 //  3) word is not the idenity
 void verify_indiscrete_lattice_simple(char* where, char* word)
 {
@@ -261,27 +181,6 @@ void verify_indiscrete_lattice_simple(char* where, char* word)
     check(large_horoball(w, params), where);
     check(absUB(w.b) < 1, where);
     check(not_identity(w), where);
-//
-//    bool h = check(large_horoball(w, params), where);
-//    bool b = check(absUB(w.b) < 1, where);
-//    bool id = check(not_identity(w), where);
-//
-//    if (!h || !b || ! id) {
-//        fprintf(stderr,"Q FAILURE+++++++++++++++\n");
-//        debug_info(where, word);
-//    }
-//    if (!h) {
-//        fprintf(stderr,"fail horo - indiscrete_lattice_simple\n");
-//    }
-//    if (!b) {
-//        fprintf(stderr,"fail b bound - indiscrete_lattice_simple\n");
-//        fprintf(stderr, "absUB(w.b) = %f\n", absUB(w.b));
-//    }
-//    if (!id) {
-//        fprintf(stderr,"fail not ident - indiscrete_lattice_simple\n");
-//        fprintf(stderr," absLB(b) = %f\n absLB(c) = %f\n absLB(a-1) = %f\n absLB(d-1) = %f\n absLB(a+1) = %f\n absLB(d+1) = %f\n",
-//                         absLB(w.b), absLB(w.c), absLB(w.a - 1.), absLB(w.d - 1.), absLB(w.a + 1.), absLB(w.d + 1.));
-//    } 
 }
 
 // Conditions checked:
@@ -293,8 +192,6 @@ void verify_indiscrete_lattice(char* where, char* word)
     Params<ACJ> params = box.cover();
     SL2ACJ w = construct_word(params, word);
     double one = 1; // Exact
-
-//    debug_info(where, word);
 
     check(large_horoball(w, params), where);
     
@@ -325,11 +222,6 @@ void verify_indiscrete_lattice(char* where, char* word)
     ACJ d3 = (T - one) / (L - one);
     ACJ d4 = d3 - one; // better error estimate
 
-//    fprintf(stderr, "%f, %f, %f, %f\n", absLB(L + one) - absUB(T),
-//                                        absLB(L + one) - absUB(T - L - one),
-//                                        absLB(L - one) - absUB(T - one),
-//                                        absLB(L - one) - absUB(T - L));
-
     check(absUB(d1) < 1 && absUB(d2) < 1 && absUB(d3) < 1 && absUB(d4) < 1, where);
 }
 
@@ -347,9 +239,8 @@ void parse_word(char* code)
 void verify(char* where, size_t depth, size_t* count_ptr)
 {
     check(depth < MAX_DEPTH, where);
-    // TODO: Make a conditional list file and update the tree with conditions
     char code[MAX_CODE_LEN];
-    fgets(code,MAX_CODE_LEN, stdin);
+    fgets(code, MAX_CODE_LEN, stdin);
     //printf("%s CODE %s\n", where, code);
     switch(code[0]) {
         case 'X': { 
@@ -382,10 +273,6 @@ void verify(char* where, size_t depth, size_t* count_ptr)
             parse_word(code);
             verify_parabolic_always_impossible(where, code);
             break; } 
-        case 'I': { // Line has format I(word) - impossible identity 
-            parse_word(code);
-            verify_identity_always_impossible(where, code);
-            break; }
         case 'Q': { // Line has format Q(word) - failed quasi-relator 
             parse_word(code);
             verify_indiscrete_lattice_simple(where, code);
