@@ -6,10 +6,13 @@ CC=gcc
 .SUFFIXES: .o .cpp .C
 
 .cpp.o:
-	$(CPLUSPLUS) $(COPTS) $(CCFLAGS) -c ${@:o=cpp}
+	$(CPLUSPLUS) $(CCOPTS) $(CCFLAGS) -c ${@:o=cpp}
 
 verify_cusp: verify_cusp.o $(COMMON)
 	$(CPLUSPLUS) $(COPTS) verify_cusp.o $(COMMON) $(LIBS) -o ../bin/verify_cusp
+
+slopes: slopes.o $(COMMON)
+	$(CPLUSPLUS) $(CCOPTS) slopes.o $(COMMON) $(LIBS) -o ../bin/slopes
 
 simple_tree_cat: simple_tree_cat.o
 	$(CPLUSPLUS) $(COPTS) simple_tree_cat.o -o ../bin/simple_tree_cat
