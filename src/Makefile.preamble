@@ -1,4 +1,4 @@
-CCOPTS= -Wall -fsigned-char -std=c++17 -stdlib=libc++
+CCOPTS= -Wall -fsigned-char -std=c++11
 COPTS= -Wall -fsigned-char
 #COPTS=-O4 -ggdb -Wall -fsigned-char
 #COPTS=-O4 -Wall -fsigned-char -DHACK

@@ -10,9 +10,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
-#include <numeric>
 
 using namespace std;
+
+int gcd(int u, int v) {
+    while (v != 0) {
+        int r = u % v;
+        u = v;
+        v = r;
+    }
+    return u;
+}
 
 const int slope_dist(slope s1, slope s2) {
     int dist = s1.first * s2.second - s1.second * s2.first;
