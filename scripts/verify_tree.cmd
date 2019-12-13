@@ -12,8 +12,8 @@
 
 base_dir="/u/yarmola/verify-cusp"
 bin_dir="$base_dir/bin"
-data_dir="/scratch/network/yarmola/run_cleanup/output_5.24_complete"
+data_dir="/scratch/network/yarmola/run_cleanup/tree_tar"
 
 cd $bin_dir
 
-/u/yarmola/momsearch/bin/simple_tree_cat -r data_5.24 '' | ./verify_cusp '' > test.log
+./rootcat "$data_dir" | ./verify_cusp '' > "$base_dir/test.log"

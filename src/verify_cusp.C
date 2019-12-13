@@ -16,7 +16,7 @@ void check(bool inequalities, char* where)
     }
 }
 
-inline const double areaLB(const Params<XComplex>&nearer, char* where)
+inline const double areaLB(const XParams&nearer, char* where)
 {
     // Area is |lox_sqrt|^2*|Im(lattice)|.
     XComplex lox_sqrt = nearer.loxodromic_sqrt;
@@ -36,47 +36,44 @@ inline const double areaLB(const Params<XComplex>&nearer, char* where)
 // 0. |lox_sqrt| >= 1 
 // 1. 
 //    a. Im(lox_sqrt) >= 0
-//    b. Im(L) >= 0 
-//    c. Im(P) >= 0
-//    d. Re(P) >= 0
-// 2. -1/2 <= Re(L) <= 1/2
-// 3. |L| >= 1
-// 4. Im(P) <= Im(L)/2 
-// 5. Re(P) <= 1/2
+//    b. Im(lattice) >= 0 
+//    c. Im(parabolic) >= 0
+//    d. Re(parabolic) >= 0
+// 2. -1/2 <= Re(lattice) <= 1/2
+// 3. |lattice| >= 1
+// 4. Im(parabolic) <= Im(lattice)/2 
+// 5. Re(parabolic) <= 1/2
 // 6. |lox_sqrt^2| Im(L) <= MAX_AREA (area of fundamental paralleogram)
 void verify_out_of_bounds(char* where, char bounds_code)
 {
-    Box box(where);
-    Params<XComplex> nearer = box.nearer();
-    Params<XComplex> further = box.further();
-    Params<XComplex> greater = box.greater();
+    Box box = build_box(where);
     switch(bounds_code) {
         case '0': {
-            check(absUB(further.loxodromic_sqrt) < 1, where);
+            check(absUB(box.further.loxodromic_sqrt) < 1, where);
             break; } 
         case '1': {
-            check(greater.loxodromic_sqrt.im < 0
-             || greater.lattice.im < 0
-             || greater.parabolic.im < 0
-             || greater.parabolic.re < 0, where);
+            check(box.greater.loxodromic_sqrt.im < 0
+             || box.greater.lattice.im < 0
+             || box.greater.parabolic.im < 0
+             || box.greater.parabolic.re < 0, where);
             break; } 
         case '2': {
-            check(fabs(nearer.lattice.re) > 0.5, where);
+            check(fabs(box.nearer.lattice.re) > 0.5, where);
             break; } 
         case '3': {
-            check(absUB(further.lattice) < 1, where);
+            check(absUB(box.further.lattice) < 1, where);
             break; } 
         case '4': {
             // Note: we can exclude the box if and only if the parabolic imag part is
             // bigger than half the lattice imag part over the WHOLE box
             // Multiplication by 0.5 is EXACT (if no underflow or overflow)
-            check(nearer.parabolic.im > 0.5*further.lattice.im, where);
+            check(box.nearer.parabolic.im > 0.5 * box.further.lattice.im, where);
             break; } 
         case '5': {
-            check(nearer.parabolic.re > 0.5, where);
+            check(box.nearer.parabolic.re > 0.5, where);
             break; } 
         case '6': {
-            double area = areaLB(nearer, where);
+            double area = areaLB(box.nearer, where);
             check(area > MAX_AREA, where);
             break;
         }
@@ -87,7 +84,7 @@ void verify_out_of_bounds(char* where, char bounds_code)
 // 1 b  OR  -1  b
 // 0 1       0 -1
 // anywhere in the box
-const int not_parabolic_at_inf(const SL2ACJ&x) {
+const int not_parabolic_at_inf(const SL2ACJ& x) {
     return absLB(x.c) > 0
         || ((absLB(x.a - 1) > 0 ||  absLB(x.d - 1) > 0) && (absLB(x.a + 1) > 0 || absLB(x.d + 1) > 0));
 }
@@ -96,7 +93,7 @@ const int not_parabolic_at_inf(const SL2ACJ&x) {
 // 1  OR  -1  0
 // 0 1       0 -1
 // anywhere in the box
-const int not_identity(const SL2ACJ&x) {
+const int not_identity(const SL2ACJ& x) {
     return absLB(x.b) > 0 || not_parabolic_at_inf(x);
 }
 
@@ -106,7 +103,7 @@ const int not_identity(const SL2ACJ&x) {
 // Takes an infinity horoball of height t to a horoball of height 1/(t |c|^2)
 // We want 1/(t |c|^2) > t. With t = 1/|loxodromic_sqrt|, this gives
 // |c / loxodromic_sqrt| < 1.
-const int large_horoball(const SL2ACJ&x, const Params<ACJ>&p) {
+const int large_horoball(const SL2ACJ& x, const ACJParams& p) {
     return absUB( x.c / p.loxodromic_sqrt ) < 1;
 }
 
@@ -115,11 +112,10 @@ const int large_horoball(const SL2ACJ&x, const Params<ACJ>&p) {
 //  2) word(infinity_horoball) intersects infinity_horoball
 void verify_killed(char* where, char* word)
 {
-    Box box(where);
-    Params<ACJ> params = box.cover();
-    SL2ACJ w = construct_word(params, word);
+    Box box = build_box(where);
+    SL2ACJ w = construct_word(box.cover, word);
 
-    check(large_horoball(w, params), where);
+    check(large_horoball(w, box.cover), where);
     check(not_parabolic_at_inf(w), where);
 }
 
@@ -127,9 +123,8 @@ void verify_killed(char* where, char* word)
 //  1) the box is inside the variety neighborhood for giver word 
 void verify_variety(char* where, char* variety)
 {
-    Box box(where);
-    Params<ACJ> params = box.cover();
-    SL2ACJ w = construct_word(params, variety); 
+    Box box = build_box(where);
+    SL2ACJ w = construct_word(box.cover, variety); 
 
     check((absUB(w.c) < 1) && (absUB(w.b) < 1 || absLB(w.c) > 0), where);
 }
@@ -139,11 +134,10 @@ void verify_variety(char* where, char* variety)
 //  2) check word is one that cannot be a parabolic fixing infinity
 void verify_parabolic_always_impossible(char* where, char* word)
 {
-    Box box(where);
-    Params<ACJ> params = box.cover();
-    SL2ACJ w = construct_word(params, word);
+    Box box = build_box(where);
+    SL2ACJ w = construct_word(box.cover, word);
 
-    check(large_horoball(w, params), where);
+    check(large_horoball(w, box.cover), where);
 
     // TODO Finish -- load file of impossible parabolics
     // fprintf(stderr, "verify: no implementation of checking impossible parabolic contradiction at %s\n", where);
@@ -154,12 +148,11 @@ void verify_parabolic_always_impossible(char* where, char* word)
 //  2) checks that a parabolic translate of the word is a power of a subword that cannot be parabolic
 void verify_parabolic_impossible(char* where, char* word, char* subword)
 {
-    Box box(where);
-    Params<ACJ> params = box.cover();
-    SL2ACJ w = construct_word(params, word);
-    SL2ACJ v = construct_word(params, subword);
+    Box box = build_box(where);
+    SL2ACJ w = construct_word(box.cover, word);
+    SL2ACJ v = construct_word(box.cover, subword);
 
-    check(large_horoball(w, params), where);
+    check(large_horoball(w, box.cover), where);
     check(not_parabolic_at_inf(v), where);
     // TODO Finish -- load file of impossible parabolics
     // fprintf(stderr, "verify: no implementation of checking impossible identity contradiction at %s\n", where);
@@ -171,11 +164,10 @@ void verify_parabolic_impossible(char* where, char* word, char* subword)
 //  3) word is not the idenity
 void verify_indiscrete_lattice_simple(char* where, char* word)
 {
-    Box box(where);
-    Params<ACJ> params = box.cover();
-    SL2ACJ w = construct_word(params, word);
+    Box box = build_box(where);
+    SL2ACJ w = construct_word(box.cover, word);
 
-    check(large_horoball(w, params), where);
+    check(large_horoball(w, box.cover), where);
     check(absUB(w.b) < 1, where);
     check(not_identity(w), where);
 }
@@ -185,12 +177,11 @@ void verify_indiscrete_lattice_simple(char* where, char* word)
 //  2) at the points where the word is parabolic, it is not on the lattice
 void verify_indiscrete_lattice(char* where, char* word)
 {
-    Box box(where);
-    Params<ACJ> params = box.cover();
-    SL2ACJ w = construct_word(params, word);
+    Box box = build_box(where);
+    SL2ACJ w = construct_word(box.cover, word);
     double one = 1; // Exact
 
-    check(large_horoball(w, params), where);
+    check(large_horoball(w, box.cover), where);
     
     // For all parabolic points in the box, we want verify
     // that none of them are lattice points. At such a point, the parabolic
@@ -201,7 +192,7 @@ void verify_indiscrete_lattice(char* where, char* word)
           absUB(w.a - one) < 2 || absUB(w.a + one) < 2, where);
     
     ACJ T = (absUB(w.d - one) < 2 || absUB(w.a - one) < 2) ? w.b : -w.b;
-    ACJ L = params.lattice;
+    ACJ L = box.cover.lattice;
 
     // There are now 4 equations to check corresponding to the intersection
     // of 4 circles :
@@ -239,6 +230,7 @@ void verify(char* where, size_t depth, size_t* count_ptr)
     *count_ptr += 1;
     char code[MAX_CODE_LEN];
     fgets(code, MAX_CODE_LEN, stdin);
+    printf("%s", code);
     switch(code[0]) {
         case 'X': { 
             *count_ptr -= 1; // don't count branch nodes
