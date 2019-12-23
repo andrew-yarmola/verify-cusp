@@ -9,7 +9,11 @@
 #include "slopes.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h> 
 #include <vector>
+
+#define MAX_DEPTH 256
+#define MAX_CODE_LEN 512
 
 using namespace std;
 
@@ -44,7 +48,7 @@ inline const double areaLB(const Params<XComplex>&nearer, char* where)
     return (1-EPS)*(lox_norm*lat_im);
 }
 
-const slope short_slopes_dist_and_count(char* where) {
+const slope short_slopes_dist_and_count(char* where, char* var) {
     Box box(where);
     slope error(-1,-1);
     vector< slope > short_slopes;
@@ -53,7 +57,7 @@ const slope short_slopes_dist_and_count(char* where) {
     ACJ S = cover.loxodromic_sqrt;
     ACJ L = cover.lattice;
     ACJ SL = S*L;
-    fprintf(stderr, "Box %s has min area: %f nearer lat: %f + I %f lox: %f + I %f par: %f + I %f\n", where, areaLB(nearer, where), nearer.lattice.re, nearer.lattice.im, nearer.loxodromic_sqrt.re, nearer.loxodromic_sqrt.im, nearer.parabolic.re, nearer.parabolic.im);
+    fprintf(stdout, "Box %s on variety %s has min area: %f nearer lat: %f + I %f lox: %f + I %f par: %f + I %f\n", where, var, areaLB(nearer, where), nearer.lattice.re, nearer.lattice.im, nearer.loxodromic_sqrt.re, nearer.loxodromic_sqrt.im, nearer.parabolic.re, nearer.parabolic.im);
     if (nearer.lattice.im <= 0) {
         fprintf(stderr, "Error: lattice with zero imaginary part in box %s\n", where);
         return error;
@@ -102,11 +106,14 @@ const slope short_slopes_dist_and_count(char* where) {
     return ans;
 }
 
-int main(int argc, char** argv)
+void check(bool inequalities, char* where)
 {
-    short_slopes_dist_and_count(argv[1]);	
+    if (!inequalities) {       
+        fprintf(stderr, "Fatal: slopes error at %s\n", where);
+        exit(3);
+    }
 }
-/*
+
 void parse_word(char* code)
 {
     char buf[MAX_CODE_LEN];
@@ -118,7 +125,7 @@ void parse_word(char* code)
     code[len] = '\0'; 
 }
 
-void walk(char* where, size_t depth, size_t* count_ptr)
+void compute_short_for_varieties(char* where, size_t depth, size_t* count_ptr)
 {
     check(depth < MAX_DEPTH, where);
     *count_ptr += 1;
@@ -129,21 +136,46 @@ void walk(char* where, size_t depth, size_t* count_ptr)
             *count_ptr -= 1; // don't count branch nodes
             where[depth] = '0';
             where[depth + 1] = '\0';
-            walk(where, depth + 1, count_ptr);
+            compute_short_for_varieties(where, depth + 1, count_ptr);
             where[depth] = '1';
             where[depth + 1] = '\0';
-            walk(where, depth + 1, count_ptr);
+            compute_short_for_varieties(where, depth + 1, count_ptr);
             break; }
         case 'V': { // Line has format V(word) - box in variety nhd
-            print_exceptional(where);
+            parse_word(code);
+            short_slopes_dist_and_count(where, code);
             break; }
+        case '0': 
+        case '1': 
+        case '2': 
+        case '3': 
+        case '4': 
+        case '5': 
+        case '6': 
+        case 'K': 
+        case 'P': 
+        case 'Q': 
+        case 'L': 
+        case 'E': { // skip all killed nodes 
+            break; }
+        case 'H' : {
+            fprintf(stderr, "Fatal: tree has hole at %s\n", where);
+            exit(4);
+        } 
         default: {
-            return;
+            check(false, where);
         }
     }
 }
 
-int main(int argc, char**argv)
+int main(int argc, char** argv)
+{
+    char code[MAX_CODE_LEN];
+    code[0] = '\0';
+    short_slopes_dist_and_count(argv[1], code);
+}
+
+int off_main(int argc, char**argv)
 {
     if(argc != 2) {
         fprintf(stderr,"Usage: %s position < data\n", argv[0]);
@@ -160,12 +192,13 @@ int main(int argc, char**argv)
         depth++;
     }
     where[depth] = '\0';
+
     initialize_roundoff();
     size_t count = 0;
-    walk(where, depth, &count);
+    compute_short_for_varieties(where, depth, &count);
     if(!roundoff_ok()){
         printf(". underflow may have occurred\n");
         exit(1);
     }
     exit(0);
-} */
+}

@@ -36,7 +36,7 @@ FILE* openBox(char* boxcode)
 	if (0 == stat(fileName, &sb)) {
 		char commandBuf[10000];
 		if (g_verbose) fprintf(stderr, "opening %s\n", fileName);
-		sprintf(commandBuf, "gzcat %s", fileName); // cool trick
+        sprintf(commandBuf, "tar -xOzf %s", fileName);
 		fp = popen(commandBuf, "r");
 		return fp;
 	}
