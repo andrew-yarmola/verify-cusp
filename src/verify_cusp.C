@@ -119,6 +119,31 @@ void verify_killed(char* where, char* word)
     check(not_parabolic_at_inf(w), where);
 }
 
+int g_length(char* word)
+{
+    int g_len = 0;
+    char* c = word;
+    while (c != '\0') {
+      if (*c == 'g' || *c == 'G') {
+        g_len++;
+      }
+      c++;
+    }
+    return g_len;
+}
+
+// Conditions checked:
+//  1) word has g-length at most 7 
+//  2) word(infinity_horoball) intersects infinity_horoball
+void verify_len_seven(char* where, char* word)
+{
+    Box box = build_box(where);
+    SL2ACJ w = construct_word(box.cover, word); 
+
+    check(g_length(word) < 8, where); 
+    check(large_horoball(w, box.cover), where);
+}
+
 // Conditions checked:
 //  1) the box is inside the variety neighborhood for given word 
 void verify_variety(char* where, char* variety)
@@ -170,9 +195,9 @@ void verify(char* where, size_t depth, size_t* count_ptr)
             parse_word(code);
             verify_killed(where, code);
             break; }
-        case 'V': { // Line has format V(word) - box in variety nhd
+        case 'S': { // Line has format S(word) - g-length 7 word
             parse_word(code);
-            verify_variety(where, code);
+            verify_len_seven(where, code);
             break; }
         case 'H' : {
             fprintf(stderr, "Fatal: tree has hole at %s\n", where);

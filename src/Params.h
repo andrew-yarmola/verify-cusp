@@ -4,15 +4,15 @@
 #include "SL2ACJ.h"
 
 typedef struct {
-	XComplex lattice;
-	XComplex loxodromic_sqrt;
-	XComplex parabolic;
+  XComplex lattice;
+  XComplex loxodromic_sqrt;
+  XComplex parabolic;
 } XParams;
 
 typedef struct {
-    ACJ lattice;
-    ACJ loxodromic_sqrt;
-    ACJ parabolic;
+  ACJ lattice;
+  ACJ loxodromic_sqrt;
+  ACJ parabolic;
 } ACJParams;
 
 SL2ACJ construct_G(const ACJParams& params);
