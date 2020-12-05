@@ -124,7 +124,7 @@ void verify_killed(char* where, char* word)
 }
 
 // Conditions checked:
-//  1) the box is inside the variety neighborhood for giver word 
+//  1) the box is inside the variety neighborhood for given word 
 void verify_variety(char* where, char* variety)
 {
     Box box(where);
@@ -132,94 +132,6 @@ void verify_variety(char* where, char* variety)
     SL2ACJ w = construct_word(params, variety); 
 
     check((absUB(w.c) < 1) && (absUB(w.b) < 1 || absLB(w.c) > 0), where);
-}
-
-// Conditions checked:
-//  1) word(infinity_horoball) intersects infinity_horoball
-//  2) check word is one that cannot be a parabolic fixing infinity
-void verify_parabolic_always_impossible(char* where, char* word)
-{
-    Box box(where);
-    Params<ACJ> params = box.cover();
-    SL2ACJ w = construct_word(params, word);
-
-    check(large_horoball(w, params), where);
-
-    // TODO Finish -- load file of impossible parabolics
-    // fprintf(stderr, "verify: no implementation of checking impossible parabolic contradiction at %s\n", where);
-}
-
-// Conditions checked:
-//  1) word(infinity_horoball) intersects infinity_horoball
-//  2) checks that a parabolic translate of the word is a power of a subword that cannot be parabolic
-void verify_parabolic_impossible(char* where, char* word, char* subword)
-{
-    Box box(where);
-    Params<ACJ> params = box.cover();
-    SL2ACJ w = construct_word(params, word);
-    SL2ACJ v = construct_word(params, subword);
-
-    check(large_horoball(w, params), where);
-    check(not_parabolic_at_inf(v), where);
-    // TODO Finish -- load file of impossible parabolics
-    // fprintf(stderr, "verify: no implementation of checking impossible identity contradiction at %s\n", where);
-}
-
-// Conditions checked:
-//  1) word(infinity_horoball) intersects infinity_horoball
-//  2) if word is a parabolic fixinig infinity, it must be the idenity
-//  3) word is not the idenity
-void verify_indiscrete_lattice_simple(char* where, char* word)
-{
-    Box box(where);
-    Params<ACJ> params = box.cover();
-    SL2ACJ w = construct_word(params, word);
-
-    check(large_horoball(w, params), where);
-    check(absUB(w.b) < 1, where);
-    check(not_identity(w), where);
-}
-
-// Conditions checked:
-//  1) word(infinity_horoball) intersects infinity_horoball
-//  2) at the points where the word is parabolic, it is not on the lattice
-void verify_indiscrete_lattice(char* where, char* word)
-{
-    Box box(where);
-    Params<ACJ> params = box.cover();
-    SL2ACJ w = construct_word(params, word);
-    double one = 1; // Exact
-
-    check(large_horoball(w, params), where);
-    
-    // For all parabolic points in the box, we want verify
-    // that none of them are lattice points. At such a point, the parabolic
-    // translation will be given as +/- w.b.
-    //
-    // We check the box is small enough to determine the sign.
-    check(absUB(w.d - one) < 2 || absUB(w.d + one) < 2 || 
-          absUB(w.a - one) < 2 || absUB(w.a + one) < 2, where);
-    
-    ACJ T = (absUB(w.d - one) < 2 || absUB(w.a - one) < 2) ? w.b : -w.b;
-    ACJ L = params.lattice;
-
-    // There are now 4 equations to check corresponding to the intersection
-    // of 4 circles :
-    // |translation - 0          | < |1 + lattice|
-    // |translation - (1+lattice)| < |1 + lattice|
-    // |translation - 1          | < |1 - lattice|
-    // |translation - lattice    | < |1 - lattice|
-    // These inequailties show that transltion is not on the lattice (assuming
-    // parameterd space constraitns). See proof in text.
-    // 
-    // To make the computation efficient, rearange and take absolute values at the end.
-
-    ACJ d1 = T / (L + one);
-    ACJ d2 = d1 - one; // uses fewer operations
-    ACJ d3 = (T - one) / (L - one);
-    ACJ d4 = d3 - one; // better error estimate
-
-    check(absUB(d1) < 1 && absUB(d2) < 1 && absUB(d3) < 1 && absUB(d4) < 1, where);
 }
 
 void parse_word(char* code)
@@ -265,27 +177,6 @@ void verify(char* where, size_t depth, size_t* count_ptr)
         case 'V': { // Line has format V(word) - box in variety nhd
             parse_word(code);
             verify_variety(where, code);
-            break; }
-        case 'P': { // Line has format P(word) - word cannot be parabolic
-            parse_word(code);
-            verify_parabolic_always_impossible(where, code);
-            break; } 
-        case 'Q': { // Line has format Q(word) - failed quasi-relator 
-            parse_word(code);
-            verify_indiscrete_lattice_simple(where, code);
-            break; }
-        case 'L': { // Line has format L(word) - all parabolics indiscrete
-            parse_word(code);
-            verify_indiscrete_lattice(where, code);
-            break; } 
-        case 'E': { // Line has format E(word, subword) - a word that cannot be parabolic has parabolic power 
-            parse_word(code);
-            char * comma = strchr(code,',');
-            check(comma != NULL, where);
-            char * subword = comma + 1;
-            comma[0] = '\0'; 
-            char * word = code;
-            verify_parabolic_impossible(where, word, subword);
             break; }
         case 'H' : {
             fprintf(stderr, "Fatal: tree has hole at %s\n", where);

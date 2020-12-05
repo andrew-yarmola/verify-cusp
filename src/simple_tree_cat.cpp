@@ -8,8 +8,6 @@
 #include <vector>
 #include <string>
 
-// Takes a tree from an sstream and writes to disk
-
 bool g_recursive = false;
 bool g_verbose = false;
 bool g_start_is_root = false;
