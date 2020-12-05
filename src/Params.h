@@ -3,14 +3,20 @@
 #include <math.h>
 #include "SL2ACJ.h"
 
-template<class N> struct Params {
-	N lattice;
-	N loxodromic_sqrt;
-	N parabolic;
-};
+typedef struct {
+	XComplex lattice;
+	XComplex loxodromic_sqrt;
+	XComplex parabolic;
+} XParams;
 
-SL2ACJ construct_G(const Params<ACJ>& params);
-ACJ construct_T(const Params<ACJ>& params, int M, int N);
-SL2ACJ construct_word(const Params<ACJ>& params, const char* word);
+typedef struct {
+    ACJ lattice;
+    ACJ loxodromic_sqrt;
+    ACJ parabolic;
+} ACJParams;
+
+SL2ACJ construct_G(const ACJParams& params);
+ACJ construct_T(const ACJParams& params, int M, int N);
+SL2ACJ construct_word(const ACJParams& params, const char* word);
 
 #endif // __Params_h

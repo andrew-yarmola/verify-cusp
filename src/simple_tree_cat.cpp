@@ -46,7 +46,6 @@ bool processTree(FILE* fp, bool printTree, char* boxcode)
     bool success = true;
 	int boxdepth = strlen(boxcode);
 	char buf[10000];
-    char fileName[10000];
 	int depth = 0;
 	while (fgets(buf, sizeof(buf), fp)) {
         // Open HOLE file if exists. If no printing is set, we don't need to traverse HOLEs
@@ -87,7 +86,7 @@ bool processTree(FILE* fp, bool printTree, char* boxcode)
 		
 int main(int argc, char** argv)
 {
-    bool printTree = true;
+  bool printTree = true;
 
 	if (argc > 1 && strcmp(argv[1], "-s") == 0) {
         printTree = false;

@@ -3,21 +3,21 @@
 #include <string.h> 
 #include <stdio.h> 
 
-SL2ACJ construct_G(const Params<ACJ>& params)
+SL2ACJ construct_G(const ACJParams& params)
 {
-	ACJ I(XComplex(0., 1.));
+	ACJ I(XComplex(0, 1));
 	const ACJ& sl = params.loxodromic_sqrt;
-	return SL2ACJ(I*params.parabolic*sl, I/sl, I*sl, ACJ(0.));
+	return SL2ACJ(I*params.parabolic*sl, I/sl, I*sl, ACJ(0));
 }
 
-ACJ construct_T(const Params<ACJ>& params, int M, int N)
+ACJ construct_T(const ACJParams& params, int M, int N)
 {
 	return params.lattice * double(N) + double(M);
 }
 
-SL2ACJ construct_word(const Params<ACJ>& params, const char* word)
+SL2ACJ construct_word(const ACJParams& params, const char* word)
 {
-	ACJ one(1.), zero(0.);
+	ACJ one(1), zero(0);
 	SL2ACJ w(one, zero, zero, one);
 	SL2ACJ G(construct_G(params));
 	SL2ACJ g(inverse(G));
