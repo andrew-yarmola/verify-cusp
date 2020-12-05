@@ -123,11 +123,11 @@ int g_length(char* word)
 {
     int g_len = 0;
     char* c = word;
-    while (c != '\0') {
+    while (*c != '\0') {
       if (*c == 'g' || *c == 'G') {
-        g_len++;
+        ++g_len;
       }
-      c++;
+      ++c;
     }
     return g_len;
 }
@@ -171,7 +171,6 @@ void verify(char* where, size_t depth, size_t* count_ptr)
     *count_ptr += 1;
     char code[MAX_CODE_LEN];
     fgets(code, MAX_CODE_LEN, stdin);
-    printf("%s", code);
     switch(code[0]) {
         case 'X': { 
             *count_ptr -= 1; // don't count branch nodes
@@ -195,7 +194,7 @@ void verify(char* where, size_t depth, size_t* count_ptr)
             parse_word(code);
             verify_killed(where, code);
             break; }
-        case 'S': { // Line has format S(word) - g-length 7 word
+        case 'V': { // Line has format S(word) - g-length 7 word
             parse_word(code);
             verify_len_seven(where, code);
             break; }

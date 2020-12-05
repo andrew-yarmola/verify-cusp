@@ -12,7 +12,7 @@ void compute_center_and_size(Box& box)
     // center - size <= true_center - true_size
     // center + size >= true_center + true_size
     // where box operations are floating point. 
-    box.center[i] = scale[i]*box.center_digits[i];
+    box.center[i] = scale[i] * box.center_digits[i];
     box.size[i]= (1 + 2 * EPS) * (box.size_digits[i] * scale[i] + HALFEPS * fabs(box.center_digits[i]));
   }
 }
@@ -79,7 +79,7 @@ void compute_nearer(Box& box)
   box.nearer.parabolic = XComplex(m[5], m[2]);
 }
 
-void  compute_further(Box& box)
+void compute_further(Box& box)
 {
   double m[6];
   for (int i = 0; i < 6; ++i) {
@@ -152,18 +152,18 @@ Box build_box(char* where) {
   Box box;
   // Global scaling of boxes - runs once
   if (!scale_initialized) {
-    scale_initialized = true;
     for (int i = 0; i < 6; ++i) {
       scale[i] = pow(2, -i / 6.0);
     }
-  } // 
+    scale_initialized = true;
+  } 
   for (int i = 0; i < 6; ++i) {
     box.center_digits[i] = 0;
     box.size_digits[i] = 8;
   }
   size_t pos = 0;
   size_t idx = 0;
-  size_t dir;
+  int dir;
   while (where[idx] != '\0') {
     if (where[idx] == '0') {
       dir = 0;
