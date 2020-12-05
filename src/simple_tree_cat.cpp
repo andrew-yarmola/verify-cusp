@@ -88,7 +88,7 @@ bool processTree(FILE* fp, bool printTree, char* boxcode)
 		
 int main(int argc, char** argv)
 {
-    bool printTree = true;
+  bool printTree = true;
 
 	if (argc > 1 && strcmp(argv[1], "-s") == 0) {
         printTree = false;
