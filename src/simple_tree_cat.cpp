@@ -30,7 +30,7 @@ FILE* open_box(char* boxcode)
     return fp;
   }
   // Look for a gzipped file
-  sprintf(file_name, "%s/%s.out.gz", g_tree_location, fileboxcode);
+  sprintf(file_name, "%s/%s.out.tar.gz", g_tree_location, fileboxcode);
   if (0 == stat(file_name, &sb)) {
     char command_buf[10000];
     if (g_verbose) fprintf(stderr, "opening %s\n", file_name);
