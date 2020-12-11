@@ -194,7 +194,7 @@ void verify(char* where, size_t depth, size_t* count_ptr)
             parse_word(code);
             verify_killed(where, code);
             break; }
-        case 'V': { // Line has format S(word) - g-length 7 word
+        case 'S': { // Line has format S(word) - g-length 7 word
             parse_word(code);
             verify_len_seven(where, code);
             break; }

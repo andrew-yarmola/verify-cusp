@@ -2,6 +2,7 @@ include Makefile.preamble
 COMMON= ACJ.o Box.o Params.o SL2ACJ.o Complex.o roundoff.o
 CPLUSPLUS= g++
 CC=gcc
+COPTS=-O3 -std=c++1y
 
 .SUFFIXES: .o .cpp .C
 
