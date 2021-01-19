@@ -20,21 +20,3 @@
  const XComplex&ff1= 0,const XComplex&ff2= 0,double err= 0)
  :f(ff),f0(ff0),f1(ff1),f2(ff2),e(err),
  size((1+2*EPS)*(absUB(ff0)+(absUB(ff1)+absUB(ff2))))
---- ../original_verify/test_float.C	2020-10-31 15:05:42.642163000 -0400
-+++ test_float.C	2020-10-31 15:05:42.697162000 -0400
-@@ -1,5 +1,6 @@
- #include "roundoff.h"
- #include <stdio.h>
-+#include <stdlib.h>
- 
- char *double_to_hex(double x)
- {
-@@ -13,7 +14,7 @@
-   return buf;
- }
-   
--main() {
-+int main() {
-   double small = 1e-200;
-   int i;
-   initialize_roundoff();
