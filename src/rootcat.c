@@ -40,7 +40,6 @@ bool process_tree(FILE* fp, char* boxcode)
   bool success = true;
   size_t box_depth = strlen(boxcode);
   char buf[MAX_BUF];
-  char file_name[MAX_BUF];
   size_t depth = 0;
   while (fgets(buf, sizeof(buf), fp)) {
     // Open HOLE file

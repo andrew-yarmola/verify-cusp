@@ -36,10 +36,7 @@ void verify(char* where, size_t depth, size_t* count_ptr)
             parse_word(code);
             verify_len(where, code, 7);
             break; }
-        case 'H' : {
-            fprintf(stderr, "Fatal: tree has hole at %s\n", where);
-            exit(4);
-        } 
+        // We fail by default, guaranteeing completes on the tree
         default: {
             check(false, where);
         }
@@ -49,19 +46,11 @@ void verify(char* where, size_t depth, size_t* count_ptr)
 int main(int argc, char**argv)
 {
     if(argc != 2) {
-        fprintf(stderr,"Usage: %s position < data\n", argv[0]);
+        fprintf(stderr,"Usage: %s < data\n", argv[0]);
         exit(1);
     }
     char where[MAX_DEPTH];
     size_t depth = 0;
-    while (argv[1][depth] != '\0') {
-        if (argv[1][depth] != '0' && argv[1][depth] != '1'){
-            fprintf(stderr,"bad position %s\n",argv[1]);
-            exit(2);
-        }
-        where[depth] = argv[1][depth];
-        depth++;
-    }
     where[depth] = '\0';
 
     printf("Begin verify %s - {\n", where);

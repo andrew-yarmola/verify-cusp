@@ -1,6 +1,18 @@
 #ifndef _box_h_
 #define _box_h_
-#include "params.h"
+#include "SL2ACJ.h"
+
+typedef struct {
+  XComplex lattice;
+  XComplex loxodromic_sqrt;
+  XComplex parabolic;
+} XParams;
+
+typedef struct {
+  ACJ lattice;
+  ACJ loxodromic_sqrt;
+  ACJ parabolic;
+} ACJParams;
 
 typedef struct {
   double center_digits[6];

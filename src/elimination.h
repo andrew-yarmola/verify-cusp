@@ -16,11 +16,17 @@ typedef struct {
     char second[MAX_CODE_LEN];
 } word_pair;
 
-word_pair parse_word_pair(char* code);
+word_pair get_word_pair(char* code);
+
+int g_length(char* word);
 
 // Elimination functions
 
-int g_length(char* word);
+SL2ACJ construct_G(const ACJParams& params);
+
+ACJ construct_T(const ACJParams& params, int M, int N);
+
+SL2ACJ construct_word(const ACJParams& params, const char* word);
 
 inline const double areaLB(const XParams&nearer, char* where);
 
