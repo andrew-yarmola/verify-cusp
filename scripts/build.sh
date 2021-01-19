@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
+pushd ../src
 # build
-cd ../src
 make test_float
 make rootcat
 make verify
 make identify
+popd

@@ -6,25 +6,25 @@ Along with the data, this code provides a proof of Theorems {} and {} of the pap
 # Installation
 
 There are no dependencies of this code outside of the C++ standard library.
-There are four binaries that need to be made from the `src` directory:
+There are several binaries that need to be made from the `src` directory:
 
 ```
 make rootcat
 make verify
 make identify
-make test_float
+make tests
 ```
 One should run `test_float` from the `bin` directory before any verification code to make sure that your system correctly catchest any overflow and underflow.
 To run the proof of Theorem {}, from the `bin` direcotry execute:
 ```
-./rootcat data_folder | ./verify
+./rootcat ../data/verify | ./verify
 ```
 Note, this process is long and take 10-15 hours to finish.
 Similarly, the proof of Theorem {}, from the `bin` directory:
 ```
-./rootcat data_folder | ./identify
+./rootcat ../data/identify | ./identify
 ```
-This runs in about 5 minutes.
+This runs in just a few minutes.
 For ease of use, script are provided in the scripts directory.
 
 # Code
@@ -37,7 +37,6 @@ In fact, aside from fixing two minor typos and adding a missing library to `test
 Complex.h Complex.C Complex.inline
 ACJ.h ACJ.C ACJ.inline
 SL2ACJ.h SL2ACJ.C
-test_float.C
 ```
 The fixed typos are contained in the patch file `arithmetic.patch`.
 Note, in "Homotopy hyperbolic 3-manifolds are hyperbolic," the authors use `CWEB` to generate the source code.
@@ -72,7 +71,7 @@ Lettered condisions are of the form `t(words)` where `t` encodes the type of con
 There are four types of lettered contitions, see the paper for details.
 The code for verifying these conditions can be found in: `elimination.h` and `elimination.c`.
 
-### test_float
+### tests
 
-This program checks whether your system correctly reports that roundoff error has occured.
+These programs checks whether your system correctly report that roundoff error has occured.
 Note, the roundoff checking function has been updated from the version in "Homotopy hyperbolic 3-manifolds are hyperbolic" to only include testing for x64 machines. 

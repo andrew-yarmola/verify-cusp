@@ -1,15 +1,26 @@
 #!/usr/bin/env bash
 
-cd ../bin
+# Test that overflow and underflow is detecatble on the system
+./tests.sh
 
-# Test that underflow is detecatble on the system
-./test_float
+if [ $? -ne 0 ]; then
+  echo "Tests have failed."
+  exit -1
+fi
 
-# Run identify
-./rootcat data/verify | ./verify
+echo ""
+
+pushd ../bin > /dev/null
+
+# Run verify
+./rootcat ../data/verify | ./verify
 
 if [ $? -eq 0 ]; then
-    echo "Verification succeded."
+  echo "Identification succeded."
 else
-    echo "Verification failed."
+  echo "Identification failed."
+  popd > /dev/null
+  exit -1
 fi
+
+popd > /dev/null

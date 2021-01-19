@@ -1,18 +1,29 @@
 #!/usr/bin/env bash
 
-cd ../bin
+# Test that overflow and underflow is detecatble on the system
+./tests.sh
 
-# Test that underflow is detecatble on the system
-./test_float
+if [ $? -ne 0 ]; then
+  echo "Tests have failed."
+  exit -1
+fi
+
+echo ""
+
+pushd ../bin > /dev/null
 
 # Run identify
-./rootcat data/identify | ./identify
+./rootcat ../data/identify | ./identify
 
 if [ $? -eq 0 ]; then
-    echo "Identification succeded."
-    # list unique intersecions for ease of checking
-    echo "Rerunning to list unique variety intersections."
-    ./rootcat data/identify | ./identify | grep "Valid" | sort -u
+  echo -e "Identification succeded.\n"
+  # List unique intersecions for ease of checking
+  echo "Rerunning to list unique variety intersections."
+  ./rootcat ../data/identify | ./identify | grep "Valid" | sort -u
 else
-    echo "Identification failed."
+  echo "Identification failed."
+  popd > /dev/null
+  exit -1
 fi
+
+popd > /dev/null
