@@ -1,6 +1,6 @@
-#ifndef __Box_h
-#define __Box_h
-#include "Params.h"
+#ifndef _box_h_
+#define _box_h_
+#include "params.h"
 
 typedef struct {
   double center_digits[6];
@@ -15,4 +15,4 @@ typedef struct {
 
 Box build_box(char* where);
 
-#endif // __Box_h
+#endif // _box_h_

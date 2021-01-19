@@ -1,35 +1,19 @@
-include Makefile.preamble
-COMMON= ACJ.o Box.o Params.o SL2ACJ.o Complex.o roundoff.o
-CPLUSPLUS= g++
-CC=gcc
-COPTS=-O3 -std=c++1y
+CC=g++
+LIBS=-lm
+COMMON= ACJ.o box.o elimination.o params.o SL2ACJ.o Complex.o roundoff.o
 
-.SUFFIXES: .o .cpp .C
+.SUFFIXES: .o .c .C
 
-.cpp.o:
-	$(CPLUSPLUS) $(CCOPTS) $(CCFLAGS) -c ${@:o=cpp}
+verify: verify.o $(COMMON)
+	$(CC) verify.o $(COMMON) $(LIBS) -o ../bin/verify
 
-verify_cusp: verify_cusp.o $(COMMON)
-	$(CPLUSPLUS) $(COPTS) verify_cusp.o $(COMMON) $(LIBS) -o ../bin/verify_cusp
-
-slopes: slopes.o $(COMMON)
-	$(CPLUSPLUS) $(CCOPTS) slopes.o $(COMMON) $(LIBS) -o ../bin/slopes
-
-simple_tree_cat: simple_tree_cat.o
-	$(CPLUSPLUS) $(COPTS) simple_tree_cat.o -o ../bin/simple_tree_cat
+identify: identify.o $(COMMON)
+	$(CC) identify.o $(COMMON) $(LIBS) -o ../bin/identify
 
 rootcat: rootcat.o
-	$(CC) $(COPTS) rootcat.o -o ../bin/rootcat
-
-depend:
-	makedepend -I/usr/local/lib/g++-include -f Makefile.depend *.cpp
-include Makefile.depend
+	$(CC) rootcat.o -o ../bin/rootcat
 
 # never optimize here, since the timing of arithmetic is important
-test_float.o: test_float.cpp roundoff.h
-	$(CPLUSPLUS) -g -c test_float.cpp
-
 test_float: test_float.o roundoff.o roundoff.h
-	$(CC) $(COPTS) test_float.o roundoff.o -o test_float -lm
+	$(CC) test_float.o roundoff.o -o test_float
 
-# DO NOT DELETE THIS LINE -- make depend depends on it.

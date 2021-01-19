@@ -1,12 +1,11 @@
 #include <stdio.h> 
 #include <stdlib.h>
 #include <string.h> 
-#include "roundoff.h"
-#include "Box.h"
+#include "elimination.h"
 
-#define MAX_DEPTH 256
-#define MAX_CODE_LEN 512
-#define MAX_AREA 5.24
+extern double g_max_area;
+
+// Helper functions
 
 void check(bool inequalities, char* where)
 {
@@ -16,7 +15,50 @@ void check(bool inequalities, char* where)
     }
 }
 
-inline const double areaLB(const XParams&nearer, char* where)
+void parse_word(char* code)
+{
+    char buf[MAX_CODE_LEN];
+    strncpy(buf, code, MAX_CODE_LEN);
+    char * start = strchr(buf,'(');
+    char * end = strchr(buf,')');
+    size_t len = end - start - 1;
+    strncpy(code, start+1, len);
+    code[len] = '\0'; 
+}
+
+word_pair parse_word_pair(char* code)
+{
+    word_pair result;
+    char * start = strchr(code,'(');
+    char * mid = strchr(code,',');
+    char * end = strchr(code,')');
+    size_t first_len = mid - start - 1;
+    size_t second_len = end - mid - 1;
+    strncpy(result.first, start+1, first_len);
+    strncpy(result.second, mid+1, second_len);
+    result.first[first_len] = '\0';
+    result.second[second_len] = '\0';
+    return result; 
+}
+
+// Elimination Tools
+
+// Gives number of g and G in a word
+int g_length(char* word)
+{
+    int g_len = 0;
+    char* c = word;
+    while (*c != '\0') {
+      if (*c == 'g' || *c == 'G') {
+        ++g_len;
+      }
+      ++c;
+    }
+    return g_len;
+}
+
+// Cusp area lower bound
+inline const double areaLB(const XParams& nearer, char* where)
 {
     // Area is |lox_sqrt|^2*|Im(lattice)|.
     XComplex lox_sqrt = nearer.loxodromic_sqrt;
@@ -43,7 +85,7 @@ inline const double areaLB(const XParams&nearer, char* where)
 // 3. |lattice| >= 1
 // 4. Im(parabolic) <= Im(lattice)/2 
 // 5. Re(parabolic) <= 1/2
-// 6. |lox_sqrt^2| Im(L) <= MAX_AREA (area of fundamental paralleogram)
+// 6. |lox_sqrt^2| Im(L) <= g_max_area (area of fundamental paralleogram)
 void verify_out_of_bounds(char* where, char bounds_code)
 {
     Box box = build_box(where);
@@ -74,7 +116,7 @@ void verify_out_of_bounds(char* where, char bounds_code)
             break; } 
         case '6': {
             double area = areaLB(box.nearer, where);
-            check(area > MAX_AREA, where);
+            check(area > g_max_area, where);
             break;
         }
     }
@@ -119,28 +161,15 @@ void verify_killed(char* where, char* word)
     check(not_parabolic_at_inf(w), where);
 }
 
-int g_length(char* word)
-{
-    int g_len = 0;
-    char* c = word;
-    while (*c != '\0') {
-      if (*c == 'g' || *c == 'G') {
-        ++g_len;
-      }
-      ++c;
-    }
-    return g_len;
-}
-
 // Conditions checked:
-//  1) word has g-length at most 7 
+//  1) word has g-length at most g_len 
 //  2) word(infinity_horoball) intersects infinity_horoball
-void verify_len_seven(char* where, char* word)
+void verify_len(char* where, char* word, int g_len)
 {
     Box box = build_box(where);
     SL2ACJ w = construct_word(box.cover, word); 
 
-    check(g_length(word) < 8, where); 
+    check(g_length(word) <= g_len, where); 
     check(large_horoball(w, box.cover), where);
 }
 
@@ -152,89 +181,4 @@ void verify_variety(char* where, char* variety)
     SL2ACJ w = construct_word(box.cover, variety); 
 
     check((absUB(w.c) < 1) && (absUB(w.b) < 1 || absLB(w.c) > 0), where);
-}
-
-void parse_word(char* code)
-{
-    char buf[MAX_CODE_LEN];
-    strncpy(buf, code, MAX_CODE_LEN);
-    char * start = strchr(buf,'(');
-    char * end = strchr(buf,')');
-    size_t len = end - start - 1;
-    strncpy(code, start+1, len);
-    code[len] = '\0'; 
-}
-
-void verify(char* where, size_t depth, size_t* count_ptr)
-{
-    check(depth < MAX_DEPTH, where);
-    *count_ptr += 1;
-    char code[MAX_CODE_LEN];
-    fgets(code, MAX_CODE_LEN, stdin);
-    switch(code[0]) {
-        case 'X': { 
-            *count_ptr -= 1; // don't count branch nodes
-            where[depth] = '0';
-            where[depth + 1] = '\0';
-            verify(where, depth + 1, count_ptr);
-            where[depth] = '1';
-            where[depth + 1] = '\0';
-            verify(where, depth + 1, count_ptr);
-            break; }
-        case '0': 
-        case '1': 
-        case '2': 
-        case '3': 
-        case '4': 
-        case '5': 
-        case '6': {
-            verify_out_of_bounds(where, code[0]);
-            break; }
-        case 'K': { // Line has format  K(word) - killer word
-            parse_word(code);
-            verify_killed(where, code);
-            break; }
-        case 'S': { // Line has format S(word) - g-length 7 word
-            parse_word(code);
-            verify_len_seven(where, code);
-            break; }
-        case 'H' : {
-            fprintf(stderr, "Fatal: tree has hole at %s\n", where);
-            exit(4);
-        } 
-        default: {
-            check(false, where);
-        }
-    }
-}
-
-int main(int argc, char**argv)
-{
-    if(argc != 2) {
-        fprintf(stderr,"Usage: %s position < data\n", argv[0]);
-        exit(1);
-    }
-    char where[MAX_DEPTH];
-    size_t depth = 0;
-    while (argv[1][depth] != '\0') {
-        if (argv[1][depth] != '0' && argv[1][depth] != '1'){
-            fprintf(stderr,"bad position %s\n",argv[1]);
-            exit(2);
-        }
-        where[depth] = argv[1][depth];
-        depth++;
-    }
-    where[depth] = '\0';
-
-    printf("verified %s - {\n", where);
-    initialize_roundoff();
-    size_t count = 0;
-    verify(where, depth, &count);
-    if(!roundoff_ok()){
-        printf(". underflow may have occurred\n");
-        exit(1);
-    }
-    printf("Verified %lu nodes\n", count);
-    printf("}.\n");
-    exit(0);
 }

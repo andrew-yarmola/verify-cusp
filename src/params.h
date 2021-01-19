@@ -1,6 +1,5 @@
-#ifndef __Params_h
-#define __Params_h
-#include <math.h>
+#ifndef _params_h_
+#define _params_h_
 #include "SL2ACJ.h"
 
 typedef struct {
@@ -19,4 +18,4 @@ SL2ACJ construct_G(const ACJParams& params);
 ACJ construct_T(const ACJParams& params, int M, int N);
 SL2ACJ construct_word(const ACJParams& params, const char* word);
 
-#endif // __Params_h
+#endif // _params_h_

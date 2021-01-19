@@ -1,7 +1,6 @@
-#include "SL2ACJ.h"
-#include "Params.h"
 #include <string.h> 
 #include <stdio.h> 
+#include "params.h"
 
 SL2ACJ construct_G(const ACJParams& params)
 {
