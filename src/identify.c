@@ -67,7 +67,7 @@ int main(int argc, char**argv)
         printf(". underflow may have occurred\n");
         exit(1);
     }
-    printf("Identified varieties above and verified %lu nodes\n", count);
+    printf("Successfully identified varieties above and verified %lu nodes\n", count);
     printf("}.\n");
     exit(0);
 }

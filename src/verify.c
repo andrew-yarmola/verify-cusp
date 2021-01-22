@@ -41,6 +41,18 @@ void verify(char* where, size_t depth, size_t* count_ptr)
             check(false, where);
         }
     }
+    // Block below is only for printing progress. 
+    //    progress bar code from: https://stackoverflow.com/a/36315819/1411737
+    if (*count_ptr % (1 << 18) == 0 && code[0] != 'X') {
+      #define PBSTR "++++++++++++++++++++++++++++++++++++++++++++++++++"
+      #define PBWIDTH 50
+      #define NUM_NODES 1394524064
+      double fraction = ((double) *count_ptr) / NUM_NODES;
+      int lpad = (int) (fraction * PBWIDTH);
+      int rpad = PBWIDTH - lpad;
+      printf("\r%6.2f%% [%.*s%*s] of %d", 100 * fraction, lpad, PBSTR, rpad, "", NUM_NODES);
+      fflush(stdout);
+    }
 }
 
 int main(int argc, char**argv)
@@ -61,7 +73,7 @@ int main(int argc, char**argv)
         printf(". underflow may have occurred\n");
         exit(1);
     }
-    printf("Verified %lu nodes\n", count);
+    printf("Successfully verified all %lu nodes\n", count);
     printf("}.\n");
     exit(0);
 }
