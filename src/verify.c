@@ -51,11 +51,11 @@ void verify(char* where, size_t depth, size_t* count_ptr)
         int lpad = (int) (fraction * PBWIDTH);
         int rpad = PBWIDTH - lpad;
         printf("\r%6.2f%% [%.*s%*s] of %d", 100 * fraction, lpad, PBSTR, rpad, "", NUM_NODES);
+        fflush(stdout);
     }
     if (depth == 0) {
         printf("\r%6.2f%% [%s] of %d\n", 100.00, PBSTR, NUM_NODES);
     }
-    fflush(stdout);
 }
 
 int main(int argc, char**argv)
