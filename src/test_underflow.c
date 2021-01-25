@@ -6,7 +6,7 @@ int main() {
   initialize_roundoff();
   double small = DBL_MIN;
   printf("Attempting to trigger underflow detection.\n");
-  printf("This program may abort after this line. This would be acceptable behaviour\n");
+  printf("This test may abort after this line. This would be acceptable behavior.\n");
   fflush(stdout);
   small = small*small;
   if (!roundoff_ok()) {
