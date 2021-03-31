@@ -224,13 +224,14 @@ void verify_killed(char* where, char* word)
 }
 
 // Conditions checked:
-//  1) word has g-length at most g_len
+//  1) word has non-zero g-length at most g_len
 //  2) word(infinity_horoball) intersects infinity_horoball
 void verify_len(char* where, char* word, int g_len)
 {
     Box box = build_box(where);
     SL2ACJ w = construct_word(box.cover, word);
 
+    check(g_length(word) > 0, where);
     check(g_length(word) <= g_len, where);
     check(large_horoball(w, box.cover), where);
 }

@@ -1,5 +1,5 @@
-CC := g++ -Wall
-CXX := g++ -Wall
+CC := g++ -Wall -mfpmath=sse -mieee-fp -mno-fma -mno-fma4
+CXX := g++ -Wall -mfpmath=sse -mieee-fp -mno-fma -mno-fma4
 COMMON := ACJ.o box.o elimination.o SL2ACJ.o Complex.o roundoff.o
 
 verify: verify.o $(COMMON)
