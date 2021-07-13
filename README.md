@@ -1,7 +1,7 @@
 # Low cusp volume verification
 
 This repository contains the verification code for the paper "Hyperbolic 3-manifolds of low cusp volume."
-Along with the data, this code provides a proof of Theorems {} and {} of the paper. 
+Along with the data, this code provides a proof of Propostions 2.15 and 3.5 of the paper. 
 
 # Installation
 
@@ -15,17 +15,18 @@ make identify
 make tests
 ```
 One should run `test_float` from the `bin` directory before any verification code to make sure that your system correctly catchest any overflow and underflow.
-To run the proof of Theorem {}, from the `bin` direcotry execute:
+To run the proof of Propostion 2.15, from the `bin` direcotry execute:
 ```
 ./rootcat ../data/verify | ./verify
 ```
 Note, this process is long and take 10-15 hours to finish.
-Similarly, the proof of Theorem {}, from the `bin` directory:
+Similarly, the proof of Propostion 3.5, from the `bin` directory:
 ```
 ./rootcat ../data/identify | ./identify
 ```
 This runs in just a few minutes.
-For ease of use, script are provided in the scripts directory.
+
+For ease of use, script are provided in the scripts directory that perform the above calls alongside some pretty printing.
 
 # Code
 
@@ -60,7 +61,7 @@ It is written in `C` and should catch any and all reading errors if the data is 
 
 ### verify
 
-This program verifies Theorem {}.
+This program verifies Proposition 2.15.
 It expects to recieve the complete data tree in depth-first order (e.g. the output of `rootcat`) via `stdin`.
 At a leaf node, the program will take the binary coodrinate of the node and use it to construct the parameters corresponding to that box.
 See the relevant code in `box.h` and `box.c`.
@@ -71,6 +72,11 @@ Conditions 0-6 are boundary conditions that check if the box lies entirely outsi
 Lettered conditions are of the form `t(words)` where `t` encodes the type of condition and `words` is a word or list of words.
 There are four types of lettered contitions, see the paper for details.
 The code for verifying these conditions can be found in: `elimination.h` and `elimination.c`.
+
+### identify
+
+This program verifies Proposition 3.5.
+It works just like verify but test an extra `variety` condition for identifying relators.
 
 ### tests
 
