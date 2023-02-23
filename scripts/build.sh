@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
 pushd ../src
+mkdir -p ../bin
 # build
-make test_float
+make tests
 make rootcat
 make verify
 make identify
