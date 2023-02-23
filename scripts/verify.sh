@@ -16,9 +16,9 @@ pushd ../bin > /dev/null
 ./rootcat ../data/verify | ./verify
 
 if [ $? -eq 0 ]; then
-  echo "Identification succeded."
+  echo "Verification succeded."
 else
-  echo "Identification failed."
+  echo "Verification failed."
   popd > /dev/null
   exit -1
 fi

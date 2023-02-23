@@ -13,7 +13,7 @@ void compute_center_and_size(Box& box)
     // center + size >= true_center + true_size
     // where box operations are floating point. 
     box.center[i] = scale[i] * box.center_digits[i];
-    box.size[i]= (1 + 2 * EPS) * (box.size_digits[i] * scale[i] + HALFEPS * fabs(box.center_digits[i]));
+    box.size[i]= (1 + 2 * EPS) * (box.size_digits[i] * scale[i] + HALFEPS * fabs(box.center[i]));
   }
 }
 
