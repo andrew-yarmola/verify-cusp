@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include "elimination.h"
 
-double g_max_area=3.465;
+double g_max_area=3.465001;
 
 void identify(char* where, size_t depth, size_t* count_ptr)
 {
